@@ -3,6 +3,7 @@
 
 uniform AmbientLight uAmbientLight;
 uniform HemiLight uHemiLight;
+uniform DirLight uDirLight;
 
 varying vec2 vUv;
 varying vec3 vNormal;
@@ -19,6 +20,11 @@ void main() {
 
   // hemi light
   light += hemiLight(uHemiLight.skyColor,uHemiLight.groundColor,normal);
+
+  // directional light
+  light += dirLight(uDirLight.color,uDirLight.intensity,uDirLight.direction,normal);
+
+  light = pow(light,vec3(1.0/2.2)); // gamma correction
 	
 	// geometry base color
 	vec3 baseColor = vec3(1.0);

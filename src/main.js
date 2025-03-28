@@ -6,6 +6,7 @@ import { Pane } from 'tweakpane'
 
 import vertexShader from './shaders/base/vertex.glsl'
 import fragmentShader from './shaders/base/fragment.glsl'
+import { min, step } from 'three/tsl'
 
 /**
  * Debug
@@ -18,6 +19,11 @@ const config = {
 	hemiLight: {
 		skyColor: new THREE.Color(0.55, 0.79, 1.0),
 		groundColor: new THREE.Color(0.2, 0.35, 0.0),
+	},
+	dirLight: {
+		color: new THREE.Color(0xff5500),
+		intensity: 1.0,
+		direction: new THREE.Vector3(1, 1, 1),
 	},
 }
 const pane = new Pane()
@@ -34,14 +40,57 @@ pane.addBinding(config.hemiLight, 'groundColor', {
 	color: { type: 'float' },
 })
 
+// pane
+// 	.addBinding(config.ambientLight, 'intensity', {
+// 		min: 0,
+// 		max: 1,
+// 		steps: 0.01,
+// 	})
+// 	.on('change', (ev) => {
+// 		material.uniforms.uAmbientLight.value.intensity = ev.value
+// 	})
+
+pane.addBinding(config.dirLight, 'color', {
+	color: { type: 'float' },
+})
+
 pane
-	.addBinding(config.ambientLight, 'intensity', {
+	.addBinding(config.dirLight, 'intensity', {
 		min: 0,
 		max: 1,
 		steps: 0.01,
 	})
 	.on('change', (ev) => {
-		material.uniforms.uAmbientLight.value.intensity = ev.value
+		material.uniforms.uDirLight.value.intensity = ev.value
+	})
+
+pane
+	.addBinding(config.dirLight.direction, 'x', {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uDirLight.value.direction.x = ev.value
+	})
+pane
+	.addBinding(config.dirLight.direction, 'y', {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uDirLight.value.direction.y = ev.value
+	})
+
+pane
+	.addBinding(config.dirLight.direction, 'z', {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uDirLight.value.direction.z = ev.value
 	})
 
 /**
@@ -68,6 +117,13 @@ const material = new THREE.ShaderMaterial({
 			value: {
 				skyColor: config.hemiLight.skyColor,
 				groundColor: config.hemiLight.groundColor,
+			},
+		},
+		uDirLight: {
+			value: {
+				color: config.dirLight.color,
+				intensity: config.dirLight.intensity,
+				direction: config.dirLight.direction,
 			},
 		},
 	},
