@@ -23,13 +23,12 @@ void main() {
 
   // directional light
   light += dirLight(uDirLight.color,uDirLight.intensity,uDirLight.direction,normal);
-
-  light = pow(light,vec3(1.0/2.2)); // gamma correction
 	
 	// geometry base color
 	vec3 baseColor = vec3(1.0);
 	
 	// final color
 	vec3 color = baseColor * light;
+
   gl_FragColor = vec4(color,1.0);
 }
