@@ -1,7 +1,5 @@
 import './style.css'
 import * as THREE from 'three'
-// __controls_import__
-// __gui_import__
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { Pane } from 'tweakpane'
@@ -12,19 +10,27 @@ import fragmentShader from './shaders/base/fragment.glsl'
 /**
  * Debug
  */
-// __gui__
 const config = {
-	example: 5,
+	ambientLight: {
+		color: new THREE.Color(0xffffff),
+		intensity: 0.2,
+	},
 }
 const pane = new Pane()
 
+pane.addBinding(config.ambientLight, 'color', {
+	color: { type: 'float' },
+})
+
 pane
-	.addBinding(config, 'example', {
+	.addBinding(config.ambientLight, 'intensity', {
 		min: 0,
-		max: 10,
-		step: 0.1,
+		max: 1,
+		steps: 0.01,
 	})
-	.on('change', (ev) => console.log(ev.value))
+	.on('change', (ev) => {
+		material.uniforms.uAmbientLight.value.intensity = ev.value
+	})
 
 /**
  * Scene
@@ -32,7 +38,6 @@ pane
 const scene = new THREE.Scene()
 // scene.background = new THREE.Color(0xdedede)
 
-// __box__
 /**
  * BOX
  */
@@ -40,22 +45,25 @@ const scene = new THREE.Scene()
 const material = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
-	uniforms: {},
+	uniforms: {
+		uAmbientLight: {
+			value: {
+				color: config.ambientLight.color,
+				intensity: config.ambientLight.intensity,
+			},
+		},
+	},
 })
-const geometry = new THREE.BoxGeometry(1, 1, 1)
-const mesh = new THREE.Mesh(geometry, material)
-mesh.position.y += 0.5
-scene.add(mesh)
+const boxGeometry = new THREE.BoxGeometry(1.3, 1.3, 1.3)
+const icoGeometry = new THREE.IcosahedronGeometry(1)
+const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
+const box = new THREE.Mesh(boxGeometry, material)
+const ico = new THREE.Mesh(icoGeometry, material)
+const torus = new THREE.Mesh(torusGeometry, material)
+torus.position.x = 3
+box.position.x = -3
 
-// __floor__
-/**
- * Plane
- */
-const groundMaterial = new THREE.MeshStandardMaterial({ color: 'lightgray' })
-const groundGeometry = new THREE.PlaneGeometry(10, 10)
-groundGeometry.rotateX(-Math.PI * 0.5)
-const ground = new THREE.Mesh(groundGeometry, groundMaterial)
-scene.add(ground)
+scene.add(box, ico, torus)
 
 /**
  * render sizes
@@ -70,7 +78,7 @@ const sizes = {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(4, 4, 4)
+camera.position.set(4, 3, 6)
 camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 
 /**
@@ -78,7 +86,9 @@ camera.lookAt(new THREE.Vector3(0, 2.5, 0))
  */
 // __helper_axes__
 const axesHelper = new THREE.AxesHelper(3)
-scene.add(axesHelper)
+// scene.add(axesHelper)
+
+scene.background = new THREE.Color(0x555555)
 
 /**
  * renderer
