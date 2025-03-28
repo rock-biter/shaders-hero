@@ -15,10 +15,22 @@ const config = {
 		color: new THREE.Color(0xffffff),
 		intensity: 0.2,
 	},
+	hemiLight: {
+		skyColor: new THREE.Color(0.55, 0.79, 1.0),
+		groundColor: new THREE.Color(0.2, 0.35, 0.0),
+	},
 }
 const pane = new Pane()
 
-pane.addBinding(config.ambientLight, 'color', {
+// pane.addBinding(config.ambientLight, 'color', {
+// 	color: { type: 'float' },
+// })
+
+pane.addBinding(config.hemiLight, 'skyColor', {
+	color: { type: 'float' },
+})
+
+pane.addBinding(config.hemiLight, 'groundColor', {
 	color: { type: 'float' },
 })
 
@@ -50,6 +62,12 @@ const material = new THREE.ShaderMaterial({
 			value: {
 				color: config.ambientLight.color,
 				intensity: config.ambientLight.intensity,
+			},
+		},
+		uHemiLight: {
+			value: {
+				skyColor: config.hemiLight.skyColor,
+				groundColor: config.hemiLight.groundColor,
 			},
 		},
 	},
