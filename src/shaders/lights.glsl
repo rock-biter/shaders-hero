@@ -42,3 +42,25 @@ vec3 dirLight(vec3 lightColor, float intensity, vec3 lightDirection, vec3 normal
 
   return light;
 }
+
+struct PointLight {
+  vec3 color;
+  float intensity;
+  vec3 position;
+  float maxDistance;
+};
+
+vec3 pointLight(vec3 lightColor, float intensity, vec3 lightPosition, vec3 position, vec3 normal, vec3 viewDirection, float glossiness, float maxDistance) {
+  vec3 lightDirection = lightPosition - position;
+  float d = length(lightDirection);
+
+  float decay = 1.0 - linearstep(0.0, maxDistance, d);
+  lightDirection = normalize(lightDirection);
+  float lightAngle = max(dot(normal,lightDirection),0.0);
+  vec3 diffuse = lightColor * lightAngle;
+  vec3 specular = phongSpecular(viewDirection, lightDirection, lightColor, normal, glossiness);
+
+  vec3 light = (diffuse + specular) * intensity * decay;
+
+  return light;
+}

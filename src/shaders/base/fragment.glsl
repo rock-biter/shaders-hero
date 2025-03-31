@@ -5,6 +5,7 @@ uniform AmbientLight uAmbientLight;
 uniform HemiLight uHemiLight;
 uniform DirLight uDirLight;
 uniform float uGlossiness;
+uniform PointLight uPointLight;
 
 varying vec2 vUv;
 varying vec3 vNormal;
@@ -26,6 +27,8 @@ void main() {
 
   // directional light
   light += dirLight(uDirLight.color,uDirLight.intensity,uDirLight.direction,normal,viewDirection, uGlossiness);
+
+  light += pointLight(uPointLight.color, uPointLight.intensity, uPointLight.position, vWorldPosition, normal, viewDirection, uGlossiness, uPointLight.maxDistance);
 	
 	// geometry base color
 	vec3 baseColor = vec3(1.0);

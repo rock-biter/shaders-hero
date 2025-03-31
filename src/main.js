@@ -25,6 +25,12 @@ const config = {
 		intensity: 1.0,
 		direction: new THREE.Vector3(1, 1.3, 1.2),
 	},
+	pointLight: {
+		color: new THREE.Color(0x2211ff),
+		intensity: 2.0,
+		position: new THREE.Vector3(-1, 2, 0),
+		maxDistance: 10,
+	},
 	glossiness: 22,
 }
 const pane = new Pane()
@@ -32,6 +38,59 @@ const pane = new Pane()
 // pane.addBinding(config.ambientLight, 'color', {
 // 	color: { type: 'float' },
 // })
+
+pane.addBinding(config.pointLight, 'color', {
+	color: { type: 'float' },
+})
+
+pane
+	.addBinding(config.pointLight, 'intensity', {
+		min: 0,
+		max: 4,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uPointLight.value.intensity = ev.value
+	})
+
+pane
+	.addBinding(config.pointLight, 'maxDistance', {
+		min: 0,
+		max: 20,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uPointLight.value.maxDistance = ev.value
+	})
+
+pane
+	.addBinding(config.pointLight.position, 'x', {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uPointLight.value.position.x = ev.value
+	})
+pane
+	.addBinding(config.pointLight.position, 'y', {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uPointLight.value.position.y = ev.value
+	})
+
+pane
+	.addBinding(config.pointLight.position, 'z', {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uPointLight.value.position.z = ev.value
+	})
 
 pane
 	.addBinding(config, 'glossiness', {
@@ -135,6 +194,14 @@ const material = new THREE.ShaderMaterial({
 				color: config.dirLight.color,
 				intensity: config.dirLight.intensity,
 				direction: config.dirLight.direction,
+			},
+		},
+		uPointLight: {
+			value: {
+				color: config.pointLight.color,
+				intensity: config.pointLight.intensity,
+				position: config.pointLight.position,
+				maxDistance: config.pointLight.maxDistance,
 			},
 		},
 		uGlossiness: {
