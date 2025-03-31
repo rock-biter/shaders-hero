@@ -4,13 +4,16 @@
 uniform AmbientLight uAmbientLight;
 uniform HemiLight uHemiLight;
 uniform DirLight uDirLight;
+uniform float uGlossiness;
 
 varying vec2 vUv;
 varying vec3 vNormal;
+varying vec3 vWorldPosition;
 
 void main() {
 
   vec3 normal = normalize(vNormal);
+  vec3 viewDirection = normalize(vWorldPosition - cameraPosition );
 
   // light color
 	vec3 light = vec3(0.0);
@@ -22,7 +25,7 @@ void main() {
   light += hemiLight(uHemiLight.skyColor,uHemiLight.groundColor,normal);
 
   // directional light
-  light += dirLight(uDirLight.color,uDirLight.intensity,uDirLight.direction,normal);
+  light += dirLight(uDirLight.color,uDirLight.intensity,uDirLight.direction,normal,viewDirection, uGlossiness);
 	
 	// geometry base color
 	vec3 baseColor = vec3(1.0);

@@ -23,14 +23,25 @@ const config = {
 	dirLight: {
 		color: new THREE.Color(0xff5500),
 		intensity: 1.0,
-		direction: new THREE.Vector3(1, 1, 1),
+		direction: new THREE.Vector3(1, 1.3, 1.2),
 	},
+	glossiness: 22,
 }
 const pane = new Pane()
 
 // pane.addBinding(config.ambientLight, 'color', {
 // 	color: { type: 'float' },
 // })
+
+pane
+	.addBinding(config, 'glossiness', {
+		min: 1,
+		max: 100,
+		step: 0.1,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uGlossiness.value = ev.value
+	})
 
 pane.addBinding(config.hemiLight, 'skyColor', {
 	color: { type: 'float' },
@@ -125,6 +136,9 @@ const material = new THREE.ShaderMaterial({
 				intensity: config.dirLight.intensity,
 				direction: config.dirLight.direction,
 			},
+		},
+		uGlossiness: {
+			value: config.glossiness,
 		},
 	},
 })
