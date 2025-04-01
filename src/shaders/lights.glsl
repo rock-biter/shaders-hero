@@ -64,3 +64,51 @@ vec3 pointLight(vec3 lightColor, float intensity, vec3 lightPosition, vec3 posit
 
   return light;
 }
+
+struct SpotLight {
+  vec3 color;
+  float intensity;
+  vec3 position;
+  vec3 target;
+  float maxDistance;
+  float angle;
+  float penumbra;
+};
+
+vec3 spotLight(vec3 lightColor, float intensity, vec3 lightPosition, vec3 lightTarget, vec3 position, vec3 normal, vec3 viewDirection, float glossiness, float maxDistance, float angle, float penumbra) {
+  vec3 lightDirection = lightPosition - lightTarget;
+  vec3 fragDirection = lightPosition - position;
+  float d = length(fragDirection);
+
+  float decay = 1.0 - linearstep(0.0, maxDistance, d);
+  lightDirection = normalize(lightDirection);
+  fragDirection = normalize(fragDirection);
+  float shading = max(dot(normal,fragDirection),0.0);
+  vec3 diffuse = lightColor * shading;
+  vec3 specular = phongSpecular(viewDirection, fragDirection, lightColor, normal, glossiness);
+
+  float maxLightAngle = cos(angle * 0.5);
+  float lightAngle = max(dot(fragDirection,lightDirection),0.0);
+  float edge = smoothstep(maxLightAngle - penumbra, maxLightAngle, lightAngle);
+
+  vec3 light = (diffuse + specular) * intensity * decay * edge;
+
+  return light;
+  // vec3 lightDirection = lightPosition - lightTarget;
+  // vec3 fragmentDirection = lightPosition - position;
+  // float d = length(fragmentDirection);
+
+  // float decay = 1.0 - linearstep(0.0, maxDistance, d);
+  // lightDirection = normalize(lightDirection);
+  // fragmentDirection = normalize(fragmentDirection);
+  // float lightAngle = max(dot(fragmentDirection,lightDirection),0.0);
+  // float shading = max(dot(normal,fragmentDirection),0.0);
+  // float maxLightAngle = cos(angle * 0.5);
+  // float edge = smoothstep(maxLightAngle - penumbra, maxLightAngle, lightAngle);
+  // vec3 diffuse = lightColor * shading;
+  // vec3 specular = phongSpecular(viewDirection, fragmentDirection, lightColor, normal, glossiness);
+
+  // vec3 light = (diffuse + specular) * intensity * decay * edge;
+
+  // return light;
+}

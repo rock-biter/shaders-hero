@@ -31,6 +31,15 @@ const config = {
 		position: new THREE.Vector3(-1, 2, 0),
 		maxDistance: 10,
 	},
+	spotLight: {
+		color: new THREE.Color(0x22ff11),
+		intensity: 2.0,
+		position: new THREE.Vector3(-0, 4, 2),
+		target: new THREE.Vector3(0, 1, 0),
+		maxDistance: 10,
+		angle: Math.PI / 2.5,
+		penumbra: 0.1,
+	},
 	glossiness: 22,
 }
 const pane = new Pane()
@@ -39,6 +48,110 @@ const pane = new Pane()
 // 	color: { type: 'float' },
 // })
 
+// SPOT LIGHT
+pane.addBinding(config.spotLight, 'color', {
+	color: { type: 'float' },
+})
+
+pane
+	.addBinding(config.spotLight, 'intensity', {
+		min: 0,
+		max: 4,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.intensity = ev.value
+	})
+
+pane
+	.addBinding(config.spotLight, 'angle', {
+		min: 0,
+		max: Math.PI,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.angle = ev.value
+	})
+
+pane
+	.addBinding(config.spotLight, 'penumbra', {
+		min: 0,
+		max: 1.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.penumbra = ev.value
+	})
+
+pane
+	.addBinding(config.spotLight, 'maxDistance', {
+		min: 0,
+		max: 20,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.maxDistance = ev.value
+	})
+
+pane
+	.addBinding(config.spotLight.position, 'x', {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.position.x = ev.value
+	})
+pane
+	.addBinding(config.spotLight.position, 'y', {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.position.y = ev.value
+	})
+
+pane
+	.addBinding(config.spotLight.position, 'z', {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.position.z = ev.value
+	})
+
+pane
+	.addBinding(config.spotLight.target, 'x', {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.target.x = ev.value
+	})
+pane
+	.addBinding(config.spotLight.target, 'y', {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.target.y = ev.value
+	})
+
+pane
+	.addBinding(config.spotLight.target, 'z', {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.target.z = ev.value
+	})
+
+// POINT LIGHT
 pane.addBinding(config.pointLight, 'color', {
 	color: { type: 'float' },
 })
@@ -92,6 +205,7 @@ pane
 		material.uniforms.uPointLight.value.position.z = ev.value
 	})
 
+// GLOSSINESS
 pane
 	.addBinding(config, 'glossiness', {
 		min: 1,
@@ -102,6 +216,7 @@ pane
 		material.uniforms.uGlossiness.value = ev.value
 	})
 
+// HEMI LIGHT
 pane.addBinding(config.hemiLight, 'skyColor', {
 	color: { type: 'float' },
 })
@@ -120,6 +235,7 @@ pane.addBinding(config.hemiLight, 'groundColor', {
 // 		material.uniforms.uAmbientLight.value.intensity = ev.value
 // 	})
 
+// DIR LIGHT
 pane.addBinding(config.dirLight, 'color', {
 	color: { type: 'float' },
 })
@@ -204,6 +320,17 @@ const material = new THREE.ShaderMaterial({
 				maxDistance: config.pointLight.maxDistance,
 			},
 		},
+		uSpotLight: {
+			value: {
+				color: config.spotLight.color,
+				intensity: config.spotLight.intensity,
+				position: config.spotLight.position,
+				target: config.spotLight.target,
+				maxDistance: config.spotLight.maxDistance,
+				angle: config.spotLight.angle,
+				penumbra: config.spotLight.penumbra,
+			},
+		},
 		uGlossiness: {
 			value: config.glossiness,
 		},
@@ -219,6 +346,12 @@ torus.position.x = 3
 box.position.x = -3
 
 scene.add(box, ico, torus)
+
+const planeGeom = new THREE.PlaneGeometry(10, 10)
+planeGeom.rotateX(-Math.PI / 2)
+const plane = new THREE.Mesh(planeGeom, material)
+plane.position.y = -2
+scene.add(plane)
 
 /**
  * render sizes
