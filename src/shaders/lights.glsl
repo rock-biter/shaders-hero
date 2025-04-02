@@ -1,19 +1,27 @@
-float toonify(vec3 normal, vec3 lightDir, float steps) {
+float toonify(vec3 normal, vec3 lightDir, float g, float steps) {
   float d = max(0.0, dot(normalize(normal), normalize(lightDir)));
   float t = floor(d * steps );
-  t += smoothstep( floor(d * steps) / steps,floor(d * steps) / steps + 0.08, d);
-  t /= steps;
+  float edge = floor(d * steps) / steps;
+  t += smoothstep( edge,edge + g, d);
+  t /= steps - 1.0;
+  t -= 1. / (steps - 1.0);
+  // float t = smoothstep(0.5,0.5 + g,d);
+  
   return t;
 }
 
-float toonify(float l, float colors) {
-  float t = l;
-  t = floor(t * colors ) + smoothstep( floor(t * colors) / colors,floor(t * colors) / colors + 0.05, t) ;
-  t /= colors;
+float toonify(float d, float steps, float g) {
+  float t = floor(d * steps );
+  float edge = floor(d * steps) / steps;
+  float t2 = smoothstep( edge,edge + g, d);
+  t += t2;
+  t /= steps - 1.0;
+  t -= 1. / (steps - 1.0);
   return t;
 }
 
-vec3 toonity(vec3 specular,float t) {
+vec3 toonify(vec3 specular,float t) {
+  // return step(0.5, specular);
   return smoothstep(0.5, 0.5 + t,specular);
 }
 
@@ -36,7 +44,14 @@ vec3 hemiLight(vec3 skyColor, vec3 groundColor, vec3 normal) {
   vec3 hemi = mix(groundColor, skyColor, hemiPct);
 
   #ifdef TOON
-    hemi *= toonify(length(hemi),float(TOON));
+    // float a = min(length(skyColor),length(groundColor));
+    float a = length(groundColor);
+    // float b = max(length(skyColor),length(groundColor));
+    float b = length(skyColor);
+    float h = length(hemi);
+    float t = inverseLerp(h,a,b);
+    float hemiMix = toonify(t,float(TOON),0.05);
+    hemi = mix(groundColor, skyColor,hemiMix);
   #endif
   return hemi;
 }
@@ -63,8 +78,8 @@ vec3 dirLight(vec3 lightColor, float intensity, vec3 lightDirection, vec3 normal
   vec3 specular = phongSpecular(viewDirection, lightDirection, lightColor, normal, glossiness);
 
   #ifdef TOON
-    specular = toonity(specular,0.05);
-    diffuse = diffuse * toonify(normal, lightDirection, float(TOON));
+    specular = toonify(specular,0.02);
+    diffuse = diffuse * toonify(normal, lightDirection,0.08, float(TOON));
   #endif
 
   vec3 light = (diffuse + specular) * intensity;
@@ -90,8 +105,8 @@ vec3 pointLight(vec3 lightColor, float intensity, vec3 lightPosition, vec3 posit
   vec3 specular = phongSpecular(viewDirection, lightDirection, lightColor, normal, glossiness);
 
   #ifdef TOON
-    specular = toonity(specular,0.05);
-    diffuse = diffuse * toonify(normal, lightDirection, float(TOON));
+    specular = toonify(specular,0.05);
+    diffuse = diffuse * toonify(normal, lightDirection,0.08, float(TOON));
   #endif
 
   vec3 light = (diffuse + specular) * intensity * decay;
@@ -126,28 +141,12 @@ vec3 spotLight(vec3 lightColor, float intensity, vec3 lightPosition, vec3 lightT
   float edge = smoothstep(maxLightAngle - penumbra, maxLightAngle, lightAngle);
 
   #ifdef TOON
-    specular = toonity(specular,0.05);
-    diffuse = diffuse * toonify(normal, lightDirection, float(TOON));
+    specular = toonify(specular,0.05);
+    diffuse = diffuse * toonify(normal, lightDirection,0.08, float(TOON));
   #endif
 
   vec3 light = (diffuse + specular) * intensity * decay * edge;
 
   return light;
-  // vec3 lightDirection = lightPosition - lightTarget;
-  // vec3 fragmentDirection = lightPosition - position;
-  // float d = length(fragmentDirection);
 
-  // float decay = 1.0 - linearstep(0.0, maxDistance, d);
-  // lightDirection = normalize(lightDirection);
-  // fragmentDirection = normalize(fragmentDirection);
-  // float lightAngle = max(dot(fragmentDirection,lightDirection),0.0);
-  // float shading = max(dot(normal,fragmentDirection),0.0);
-  // float maxLightAngle = cos(angle * 0.5);
-  // float edge = smoothstep(maxLightAngle - penumbra, maxLightAngle, lightAngle);
-  // vec3 diffuse = lightColor * shading;
-  // vec3 specular = phongSpecular(viewDirection, fragmentDirection, lightColor, normal, glossiness);
-
-  // vec3 light = (diffuse + specular) * intensity * decay * edge;
-
-  // return light;
 }

@@ -30,13 +30,13 @@ void main() {
   float colors = uToon;
 
   // directional light
-  light += dirLight(uDirLight.color,uDirLight.intensity,uDirLight.direction,normal,viewDirection, uGlossiness);
+  // light += dirLight(uDirLight.color,uDirLight.intensity,uDirLight.direction,normal,viewDirection, uGlossiness);
 
   // point light
-  light += pointLight(uPointLight.color, uPointLight.intensity, uPointLight.position, vWorldPosition, normal, viewDirection, uGlossiness, uPointLight.maxDistance);
+  // light += pointLight(uPointLight.color, uPointLight.intensity, uPointLight.position, vWorldPosition, normal, viewDirection, uGlossiness, uPointLight.maxDistance);
   
 
-  light += spotLight(uSpotLight.color, uSpotLight.intensity, uSpotLight.position, uSpotLight.target, vWorldPosition, normal, viewDirection, uGlossiness, uSpotLight.maxDistance, uSpotLight.angle, uSpotLight.penumbra);
+  // light += spotLight(uSpotLight.color, uSpotLight.intensity, uSpotLight.position, uSpotLight.target, vWorldPosition, normal, viewDirection, uGlossiness, uSpotLight.maxDistance, uSpotLight.angle, uSpotLight.penumbra);
 
   
 

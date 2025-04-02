@@ -22,7 +22,7 @@ const config = {
 	},
 	dirLight: {
 		color: new THREE.Color(0xff5500),
-		intensity: 1.0,
+		intensity: 0.7,
 		direction: new THREE.Vector3(1, 1.3, 1.2),
 	},
 	pointLight: {
