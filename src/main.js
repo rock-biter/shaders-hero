@@ -41,12 +41,29 @@ const config = {
 		penumbra: 0.1,
 	},
 	glossiness: 22,
+	toon: 3,
 }
 const pane = new Pane()
 
 // pane.addBinding(config.ambientLight, 'color', {
 // 	color: { type: 'float' },
 // })
+
+pane
+	.addBinding(config, 'toon', {
+		min: 1,
+		max: 10,
+		step: 1,
+	})
+	.on('change', (ev) => {
+		if (ev.value < 2) {
+			delete material.defines.TOON
+		} else {
+			material.uniforms.uToon.value = ev.value
+			material.defines.TOON = ev.value
+		}
+		material.needsUpdate = true
+	})
 
 // SPOT LIGHT
 pane.addBinding(config.spotLight, 'color', {
@@ -292,7 +309,13 @@ const scene = new THREE.Scene()
 const material = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
+	defines: {
+		TOON: config.toon,
+	},
 	uniforms: {
+		uToon: {
+			value: config.toon,
+		},
 		uAmbientLight: {
 			value: {
 				color: config.ambientLight.color,
@@ -342,10 +365,10 @@ const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
 const box = new THREE.Mesh(boxGeometry, material)
 const ico = new THREE.Mesh(icoGeometry, material)
 const torus = new THREE.Mesh(torusGeometry, material)
-torus.position.x = 3
+// torus.position.x = 3
 box.position.x = -3
 
-scene.add(box, ico, torus)
+scene.add(torus)
 
 const planeGeom = new THREE.PlaneGeometry(10, 10)
 planeGeom.rotateX(-Math.PI / 2)
@@ -376,7 +399,7 @@ camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 const axesHelper = new THREE.AxesHelper(3)
 // scene.add(axesHelper)
 
-scene.background = new THREE.Color(0x555555)
+scene.background = new THREE.Color(0x000022)
 
 /**
  * renderer
