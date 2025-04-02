@@ -1,7 +1,8 @@
-float toonify(vec3 normal, vec3 lightDir, float colors) {
-  float t = max(0.0, dot(normalize(normal), normalize(lightDir)));
-  t = floor(t * colors ) + smoothstep( floor(t * colors) / colors,floor(t * colors) / colors + 0.05, t) ;
-  t /= colors;
+float toonify(vec3 normal, vec3 lightDir, float steps) {
+  float d = max(0.0, dot(normalize(normal), normalize(lightDir)));
+  float t = floor(d * steps );
+  t += smoothstep( floor(d * steps) / steps,floor(d * steps) / steps + 0.08, d);
+  t /= steps;
   return t;
 }
 
