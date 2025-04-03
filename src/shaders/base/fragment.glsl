@@ -25,12 +25,12 @@ void main() {
 	// light += ambientLight(uAmbientLight.color,uAmbientLight.intensity);
 
   // hemi light
-  light += hemiLight(uHemiLight.skyColor,uHemiLight.groundColor,normal) * 0.5;
+  // light += hemiLight(uHemiLight.skyColor,uHemiLight.groundColor,normal) * 0.5;
 
   float colors = uToon;
 
   // directional light
-  // light += dirLight(uDirLight.color,uDirLight.intensity,uDirLight.direction,normal,viewDirection, uGlossiness);
+  light += dirLight(uDirLight.color,uDirLight.intensity,uDirLight.direction,normal,viewDirection, uGlossiness);
 
   // point light
   // light += pointLight(uPointLight.color, uPointLight.intensity, uPointLight.position, vWorldPosition, normal, viewDirection, uGlossiness, uPointLight.maxDistance);

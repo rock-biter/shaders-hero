@@ -1,11 +1,10 @@
 float toonify(vec3 normal, vec3 lightDir, float g, float steps) {
   float d = max(0.0, dot(normalize(normal), normalize(lightDir)));
-  float t = floor(d * steps );
+  float t = floor(d * steps ) / (steps - 1.0);
   float edge = floor(d * steps) / steps;
-  t += smoothstep( edge,edge + g, d);
-  t /= steps - 1.0;
+  t += smoothstep( edge,edge + g, d) / (steps - 1.0);
+  // t /= steps - 1.0;
   t -= 1. / (steps - 1.0);
-  // float t = smoothstep(0.5,0.5 + g,d);
   
   return t;
 }
