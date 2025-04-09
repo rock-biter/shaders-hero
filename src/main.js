@@ -6,7 +6,8 @@ import { Pane } from 'tweakpane'
 
 import vertexShader from './shaders/base/vertex.glsl'
 import fragmentShader from './shaders/base/fragment.glsl'
-import { min, step } from 'three/tsl'
+import { color, min, step } from 'three/tsl'
+import { IcosahedronGeometry, MeshBasicMaterial } from 'three/webgpu'
 
 /**
  * Debug
@@ -302,6 +303,18 @@ pane
 const scene = new THREE.Scene()
 // scene.background = new THREE.Color(0xdedede)
 
+const cubeTextureLoader = new THREE.CubeTextureLoader()
+const envMap = cubeTextureLoader.load([
+	'/env/01/px.png',
+	'/env/01/nx.png',
+	'/env/01/py.png',
+	'/env/01/ny.png',
+	'/env/01/pz.png',
+	'/env/01/nz.png',
+])
+
+scene.background = envMap
+
 /**
  * BOX
  */
@@ -310,11 +323,14 @@ const material = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
 	defines: {
-		TOON: config.toon,
+		// TOON: config.toon,
 	},
 	uniforms: {
 		uToon: {
 			value: config.toon,
+		},
+		uEnvMap: {
+			value: envMap,
 		},
 		uAmbientLight: {
 			value: {
@@ -365,16 +381,26 @@ const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
 const box = new THREE.Mesh(boxGeometry, material)
 const ico = new THREE.Mesh(icoGeometry, material)
 const torus = new THREE.Mesh(torusGeometry, material)
-// torus.position.x = 3
+torus.position.x = 3
 box.position.x = -3
+// box.rotation.y = 0.2
 
-scene.add(torus)
+scene.add(torus, ico, box)
 
 const planeGeom = new THREE.PlaneGeometry(10, 10)
 planeGeom.rotateX(-Math.PI / 2)
 const plane = new THREE.Mesh(planeGeom, material)
 plane.position.y = -2
-scene.add(plane)
+// scene.add(plane)
+
+const debugMesh = new THREE.Mesh(
+	boxGeometry,
+	new MeshBasicMaterial({ color: 0xffffff, envMap: envMap })
+)
+
+debugMesh.position.x = -5
+
+// scene.add(debugMesh)
 
 /**
  * render sizes
@@ -399,7 +425,7 @@ camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 const axesHelper = new THREE.AxesHelper(3)
 // scene.add(axesHelper)
 
-scene.background = new THREE.Color(0x000022)
+// scene.background = new THREE.Color(0x000022)
 
 /**
  * renderer
