@@ -15,7 +15,7 @@ import { IcosahedronGeometry, MeshBasicMaterial } from 'three/webgpu'
 const config = {
 	noise: {
 		amplitude: 0.2,
-		frequency: 10.0,
+		frequency: 3.0,
 		octaves: 5,
 	},
 }

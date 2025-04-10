@@ -18,8 +18,8 @@ varying vec3 vWorldPosition;
 
 void main() {
 	
-  float n = fbm(vWorldPosition * uFrequency + uTime * 0.5,uOctaves); // fbm
-  vec3 baseColor = vec3(n * 0.5 + 0.5);
+  float n = domainWarpingFBM(vWorldPosition * uFrequency + uTime * 0.2 ,uOctaves); // fbm
+  vec3 baseColor = vec3(n);
 	// final color
 	vec3 color = baseColor;// * light;
 
