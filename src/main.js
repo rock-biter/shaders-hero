@@ -13,38 +13,43 @@ import { IcosahedronGeometry, MeshBasicMaterial } from 'three/webgpu'
  * Debug
  */
 const config = {
-	ambientLight: {
-		color: new THREE.Color(0xffffff),
-		intensity: 0.2,
+	noise: {
+		amplitude: 0.2,
+		frequency: 10.0,
+		octaves: 5,
 	},
-	hemiLight: {
-		skyColor: new THREE.Color(0.55, 0.79, 1.0),
-		groundColor: new THREE.Color(0.2, 0.35, 0.0),
-	},
-	dirLight: {
-		color: new THREE.Color(0xff5500),
-		intensity: 0.7,
-		direction: new THREE.Vector3(1, 1.3, 1.2),
-	},
-	pointLight: {
-		color: new THREE.Color(0x2211ff),
-		intensity: 2.0,
-		position: new THREE.Vector3(-1, 2, 0),
-		maxDistance: 10,
-	},
-	spotLight: {
-		color: new THREE.Color(0x22ff11),
-		intensity: 2.0,
-		position: new THREE.Vector3(-0, 4, 2),
-		target: new THREE.Vector3(0, 1, 0),
-		maxDistance: 10,
-		angle: Math.PI / 2.5,
-		penumbra: 0.1,
-	},
-	glossiness: 22,
-	toon: 3,
 }
 const pane = new Pane()
+
+pane
+	.addBinding(config.noise, 'amplitude', {
+		min: 0,
+		max: 1,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uAmplitude.value = ev.value
+	})
+
+pane
+	.addBinding(config.noise, 'frequency', {
+		min: 0.1,
+		max: 20,
+		step: 0.05,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uFrequency.value = ev.value
+	})
+
+pane
+	.addBinding(config.noise, 'octaves', {
+		min: 1,
+		max: 10,
+		step: 1,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uOctaves.value = ev.value
+	})
 
 // pane.addBinding(config.ambientLight, 'color', {
 // 	color: { type: 'float' },
@@ -75,13 +80,19 @@ const envMap = cubeTextureLoader.load([
 const material = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
-	wireframe: true,
-	defines: {
-		// TOON: config.toon,
-	},
+	// wireframe: true,
 	uniforms: {
 		uTime: {
 			value: 0,
+		},
+		uAmplitude: {
+			value: config.noise.amplitude,
+		},
+		uFrequency: {
+			value: config.noise.frequency,
+		},
+		uOctaves: {
+			value: config.noise.octaves,
 		},
 	},
 })
@@ -95,13 +106,13 @@ torus.position.x = 3
 // box.position.x = -3
 // box.rotation.y = 0.2
 
-// scene.add(box)
+scene.add(box)
 
-const planeGeom = new THREE.PlaneGeometry(1, 1, 10, 10)
+const planeGeom = new THREE.PlaneGeometry(1, 1, 50, 50)
 // planeGeom.rotateX(-Math.PI / 2)
 const plane = new THREE.Mesh(planeGeom, material)
 // plane.position.y = -2
-scene.add(plane)
+// scene.add(plane)
 
 const debugMesh = new THREE.Mesh(
 	boxGeometry,
@@ -125,7 +136,7 @@ const sizes = {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(0.5, 0.5, 1.5)
+camera.position.set(2, 1, 2.4)
 camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 
 /**
