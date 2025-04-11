@@ -9,14 +9,21 @@ import fragmentShader from './shaders/base/fragment.glsl'
 import { color, min, step } from 'three/tsl'
 import { IcosahedronGeometry, MeshBasicMaterial } from 'three/webgpu'
 
+const textureLoader = new THREE.TextureLoader()
+const map = textureLoader.load('/textures/01.jpg')
+
 /**
  * Debug
  */
 const config = {
 	noise: {
 		amplitude: 0.2,
-		frequency: 3.0,
+		frequency: 10.0,
 		octaves: 5,
+	},
+	curl: {
+		intensity: 1,
+		steps: 0,
 	},
 }
 const pane = new Pane()
@@ -51,6 +58,26 @@ pane
 		material.uniforms.uOctaves.value = ev.value
 	})
 
+pane
+	.addBinding(config.curl, 'intensity', {
+		min: 0,
+		max: 1,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uCurlIntensity.value = ev.value
+	})
+
+pane
+	.addBinding(config.curl, 'steps', {
+		min: 0,
+		max: 30,
+		step: 1,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uCurlSteps.value = ev.value
+	})
+
 // pane.addBinding(config.ambientLight, 'color', {
 // 	color: { type: 'float' },
 // })
@@ -82,6 +109,15 @@ const material = new THREE.ShaderMaterial({
 	fragmentShader,
 	// wireframe: true,
 	uniforms: {
+		uMap: {
+			value: map,
+		},
+		uCurlIntensity: {
+			value: config.curl.intensity,
+		},
+		uCurlSteps: {
+			value: config.curl.steps,
+		},
 		uTime: {
 			value: 0,
 		},
@@ -107,7 +143,7 @@ torus.rotation.x = -Math.PI * 0.2
 // box.position.x = -3
 // box.rotation.y = 0.2
 
-scene.add(torus)
+scene.add(box)
 
 const planeGeom = new THREE.PlaneGeometry(1, 1, 50, 50)
 // planeGeom.rotateX(-Math.PI / 2)
