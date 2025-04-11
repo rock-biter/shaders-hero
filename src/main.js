@@ -97,16 +97,17 @@ const material = new THREE.ShaderMaterial({
 	},
 })
 const boxGeometry = new THREE.BoxGeometry(1.3, 1.3, 1.3)
-const icoGeometry = new THREE.IcosahedronGeometry(1)
+const icoGeometry = new THREE.IcosahedronGeometry(1, 2)
 const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
 const box = new THREE.Mesh(boxGeometry, material)
 const ico = new THREE.Mesh(icoGeometry, material)
 const torus = new THREE.Mesh(torusGeometry, material)
-torus.position.x = 3
+torus.rotation.x = -Math.PI * 0.2
+// torus.position.x = 3
 // box.position.x = -3
 // box.rotation.y = 0.2
 
-scene.add(box)
+scene.add(torus)
 
 const planeGeom = new THREE.PlaneGeometry(1, 1, 50, 50)
 // planeGeom.rotateX(-Math.PI / 2)

@@ -94,3 +94,55 @@ float smoothVoronoi( in vec4 x )
     }
     return pow( 1.0/res, 1.0/4.0 );
 }
+
+float cellular(vec3 coords) {
+
+    vec2 base = floor(coords.xy);
+    vec2 cellOffset = fract(coords.xy);
+
+    float closest = 1.0;
+
+    for(int y = -1; y <= 1; y++ ) {
+        for(int x = -1; x <= 1; x++ ) {
+            vec2 neighbor = vec2(x,y);
+            vec2 cellPos = base + neighbor;
+            vec2 offset = vec2(
+                noise(vec3(cellPos,coords.z)),noise(vec3(cellPos,coords.z) + vec3(3.125,2.654,8.012))
+            );
+
+            float d = length(neighbor + offset - cellOffset);
+            closest = min(d, closest);
+        }
+    }
+
+    return closest;
+
+}
+
+float cellular(vec4 coords) {
+
+    vec3 base = floor(coords.xyz);
+    vec3 cellOffset = fract(coords.xyz);
+
+    float closest = 1.0;
+
+    for(int z = -1; z <= 1; z++ ) {
+        for(int y = -1; y <= 1; y++ ) {
+            for(int x = -1; x <= 1; x++ ) {
+                vec3 neighbor = vec3(x,y,z);
+                vec3 cellPos = base + neighbor;
+                vec3 offset = vec3(
+                    noise(vec3(cellPos + coords.w)),
+                    noise(vec3(cellPos + coords.w) + vec3(3.125,2.654,8.012)),
+                    noise(vec3(cellPos + coords.w) + vec3(6.125,2.594,1.268))
+                );
+
+                float d = length(neighbor + offset - cellOffset);
+                closest = min(d, closest);
+            }
+        }
+    }
+
+    return closest;
+
+}
