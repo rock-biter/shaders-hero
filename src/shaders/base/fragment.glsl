@@ -7,6 +7,7 @@ uniform float uAmplitude;
 uniform float uFrequency;
 uniform int uOctaves;
 uniform sampler2D uMap;
+uniform sampler2D uNoise;
 uniform float uCurlIntensity;
 uniform int uCurlSteps;
 
@@ -38,14 +39,18 @@ void main() {
   // vec3 offset = vec2(0.);
   // vec3 t = vec3(0.0);
 
-  for(int i = 0; i < uCurlSteps; i++) {
-    vec2 curl = curlNoise(uv * uFrequency) * 0.015;
-    uv += curl;
-  }
+  // for(int i = 0; i < uCurlSteps; i++) {
+  //   vec2 curl = curlNoise(uv * uFrequency) * 0.015;
+  //   uv += curl;
+  // }
 
-  vec3 t = texture(uMap,uv).rgb; 
+  float t = texture(uNoise,uv * uFrequency).a; 
+  // t += texture(uNoise,uv * uFrequency * 2.).r / 4.;
+  // t += texture(uNoise,uv * uFrequency * 4.).r / 8.0;
+  // t += texture(uNoise,uv * uFrequency * 8.).r / 16.;
+  // t = smoothstep(0.15,0.85,t);
 
-	vec3 color = t;
+	vec3 color = vec3(t);
 
   gl_FragColor = vec4(color,1.0);
 }

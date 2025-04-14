@@ -10,7 +10,9 @@ import { color, min, step } from 'three/tsl'
 import { IcosahedronGeometry, MeshBasicMaterial } from 'three/webgpu'
 
 const textureLoader = new THREE.TextureLoader()
-const map = textureLoader.load('/textures/01.jpg')
+const perlin = textureLoader.load('/textures/perlin-rgba.png')
+perlin.wrapS = THREE.RepeatWrapping
+perlin.wrapT = THREE.RepeatWrapping
 
 /**
  * Debug
@@ -18,7 +20,7 @@ const map = textureLoader.load('/textures/01.jpg')
 const config = {
 	noise: {
 		amplitude: 0.2,
-		frequency: 10.0,
+		frequency: 0.25,
 		octaves: 5,
 	},
 	curl: {
@@ -40,9 +42,9 @@ pane
 
 pane
 	.addBinding(config.noise, 'frequency', {
-		min: 0.1,
-		max: 20,
-		step: 0.05,
+		min: 0.005,
+		max: 2,
+		step: 0.005,
 	})
 	.on('change', (ev) => {
 		material.uniforms.uFrequency.value = ev.value
@@ -109,8 +111,11 @@ const material = new THREE.ShaderMaterial({
 	fragmentShader,
 	// wireframe: true,
 	uniforms: {
-		uMap: {
-			value: map,
+		// uMap: {
+		// 	value: map,
+		// },
+		uNoise: {
+			value: perlin,
 		},
 		uCurlIntensity: {
 			value: config.curl.intensity,
@@ -143,13 +148,13 @@ torus.rotation.x = -Math.PI * 0.2
 // box.position.x = -3
 // box.rotation.y = 0.2
 
-scene.add(box)
+// scene.add(box)
 
-const planeGeom = new THREE.PlaneGeometry(1, 1, 50, 50)
+const planeGeom = new THREE.PlaneGeometry(2, 2, 50, 50)
 // planeGeom.rotateX(-Math.PI / 2)
 const plane = new THREE.Mesh(planeGeom, material)
 // plane.position.y = -2
-// scene.add(plane)
+scene.add(plane)
 
 const debugMesh = new THREE.Mesh(
 	boxGeometry,
