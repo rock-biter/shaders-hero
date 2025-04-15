@@ -73,12 +73,14 @@ void main() {
 
     float parallaxScale = uParallaxSize;
     parallaxScale * length(vParallax);
-    parallaxScale /= length(dot(camDir,vNormal));  
+    parallaxScale /= length(dot(camDir,normal));  
     vParallax *= parallaxScale;
+
+    // vParallax = projectOnPlane(vParallax, vNormal);
 
     vec3 dir = (modelMatrix * vec4(vec3(0.0,0.0,1.0),0.0)).xyz;
     vParallax = alignVector(vNormal, dir ) * vParallax;
-    // vParallax.y *= sign(normal.z) >= 0.0 ? 1.0 : -1.;
+    vParallax.y *= sign(normal.z) >= 0.0 ? 1.0 : -1.;
 
   // wPos.y += e;
 
