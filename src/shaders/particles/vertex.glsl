@@ -13,16 +13,10 @@ void main() {
   vRandom = aRandom;
 
   vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-
-  worldPosition.y = sin(worldPosition.x + uTime * aRandom + aRandom * 10. );
-
   vec4 mvPosition = viewMatrix * worldPosition;
   gl_Position = projectionMatrix * mvPosition;
 
-  float sizeScale = sin(uTime * 10. * aRandom + aRandom * 50.);
-
-  gl_PointSize = aRandom * uSize / - mvPosition.z;
+  gl_PointSize = uSize / - mvPosition.z;
   gl_PointSize *= 0.001 * uResolution.y;
-  gl_PointSize *= 1.0 + sizeScale;
 
 }

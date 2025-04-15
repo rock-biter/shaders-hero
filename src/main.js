@@ -89,20 +89,19 @@ torus.rotation.x = -Math.PI * 0.2
 
 // scene.add(box)
 const particlesGeom = new THREE.BufferGeometry()
-const count = 5000
+const count = 10000
 const position = new Float32Array(count * 3)
 const color = new Float32Array(count * 3)
 const random = new Float32Array(count)
 
 for (let i = 0; i < count; i++) {
 	const index = i * 3
-	const x = (Math.random() - 0.5) * 10
-	const y = 0
-	const z = (Math.random() - 0.5) * 10
+	const dir = new THREE.Vector3().randomDirection()
+	const { x, y, z } = dir
 
-	position[index + 0] = x
-	position[index + 1] = y
-	position[index + 2] = z
+	position[index + 0] = x * (Math.random() * 10 + 10)
+	position[index + 1] = y * (Math.random() * 10 + 10)
+	position[index + 2] = z * (Math.random() * 10 + 10)
 	color[index + 0] = Math.random()
 	color[index + 1] = Math.random()
 	color[index + 2] = Math.random()
