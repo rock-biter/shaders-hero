@@ -11,6 +11,7 @@ import particlesVertexShader from './shaders/particles/vertex.glsl'
 import { step } from 'three/tsl'
 
 const textureLoader = new THREE.TextureLoader()
+const map = textureLoader.load('/textures/01.jpg')
 const perlin = textureLoader.load('/textures/perlin-rgba.png')
 perlin.wrapS = THREE.RepeatWrapping
 perlin.wrapT = THREE.RepeatWrapping
@@ -22,18 +23,20 @@ const config = {
 	particles: {
 		size: 500,
 	},
+	parallax: {
+		size: 0.5,
+	},
 }
 const pane = new Pane()
 
 pane
-	.addBinding(config.particles, 'size', {
-		min: 0,
-		max: 800,
-		step: 0.1,
+	.addBinding(config.parallax, 'size', {
+		min: -2,
+		max: 2,
+		step: 0.01,
 	})
-	.on('change', () => {
-		pointsMaterial.uniforms.uSize.value =
-			config.particles.size * renderer.getPixelRatio()
+	.on('change', (ev) => {
+		material.uniforms.uParallaxSize.value = ev.value
 	})
 
 // pane.addBinding(config.ambientLight, 'color', {
@@ -73,8 +76,19 @@ const envMap = cubeTextureLoader.load([
 const material = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
+	transparent: true,
 	// wireframe: true,
-	uniforms: {},
+	uniforms: {
+		uMap: {
+			value: map,
+		},
+		uParallaxSize: {
+			value: config.parallax.size,
+		},
+		uTime: {
+			value: 0,
+		},
+	},
 })
 const boxGeometry = new THREE.BoxGeometry(1, 1, 1, 5, 5, 5)
 const icoGeometry = new THREE.IcosahedronGeometry(1, 2)
@@ -87,7 +101,8 @@ torus.rotation.x = -Math.PI * 0.2
 // box.position.x = -3
 // box.rotation.y = 0.2
 
-// scene.add(box)
+scene.add(box)
+
 const particlesGeom = new THREE.BufferGeometry()
 const count = 10000
 const position = new Float32Array(count * 3)
@@ -151,7 +166,7 @@ const planeGeom = new THREE.PlaneGeometry(2, 2, 50, 50)
 // planeGeom.rotateX(-Math.PI / 2)
 const plane = new THREE.Mesh(planeGeom, material)
 // plane.position.y = -2
-scene.add(particles)
+// scene.add(particles)
 
 const debugMesh = new THREE.Mesh(
 	boxGeometry,
@@ -167,7 +182,7 @@ debugMesh.position.x = -5
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(5, 3, 10)
+camera.position.set(2, 2, 3)
 camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 
 /**
@@ -177,7 +192,7 @@ camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 const axesHelper = new THREE.AxesHelper(3)
 // scene.add(axesHelper)
 
-scene.background = new THREE.Color(0x000022)
+scene.background = new THREE.Color(0x001820)
 
 /**
  * renderer
@@ -213,6 +228,7 @@ function tic() {
 	 * tempo totale trascorso dall'inizio
 	 */
 	const time = clock.getElapsedTime()
+	// box.rotation.y = time * 0.1
 
 	// const posAttr = particlesGeom.getAttribute('position')
 
@@ -226,6 +242,7 @@ function tic() {
 	// posAttr.needsUpdate = true
 
 	pointsMaterial.uniforms.uTime.value = time
+	material.uniforms.uTime.value = time
 
 	// __controls_update__
 	controls.update()

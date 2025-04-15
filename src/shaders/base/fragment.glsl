@@ -10,20 +10,22 @@ uniform sampler2D uMap;
 uniform sampler2D uNoise;
 uniform float uCurlIntensity;
 uniform int uCurlSteps;
+uniform float uParallaxSize;
 
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vWorldPosition;
 
-#include ../perlin.glsl;
-#include ../curl.glsl;
+// #include ../perlin.glsl;
+// #include ../curl.glsl;
 // #include ../simplex.glsl;
-// #include ../fbm.glsl;
-// #include ../voronoi.glsl;
+#include ../fbm.glsl;
+#include ../voronoi.glsl;
+
+varying vec3 vParallax;
 
 void main() {
 
-  
 
   // vec2 curl = curlNoise(vUv * uFrequency);
   // float perlin = cnoise(vUv * uFrequency);
@@ -35,22 +37,34 @@ void main() {
   //   baseColor = vec3(curl * 0.5 + 0.5,0.0);
   // }
 
-  vec2 uv = vec2(vUv);
-  // vec3 offset = vec2(0.);
-  // vec3 t = vec3(0.0);
+  vec4 mapColor = vec4(0.0);
 
-  // for(int i = 0; i < uCurlSteps; i++) {
-  //   vec2 curl = curlNoise(uv * uFrequency) * 0.015;
-  //   uv += curl;
-  // }
+  for(int i = 0; i < 5; i++) {
+    vec2 uv = vec2(vUv - vParallax.xy * (float(i) * 1. * uParallaxSize + 0.3));
 
-  float t = texture(uNoise,uv * uFrequency).a; 
-  // t += texture(uNoise,uv * uFrequency * 2.).r / 4.;
-  // t += texture(uNoise,uv * uFrequency * 4.).r / 8.0;
-  // t += texture(uNoise,uv * uFrequency * 8.).r / 16.;
-  // t = smoothstep(0.15,0.85,t);
+    vec2 t = 1.0 - smoothstep(0.99,1.8,uv);
+    t *= smoothstep(-0.8,0.,uv);
 
-	vec3 color = vec3(t);
+    // mapColor += texture2D(uMap, uv).rgb * min(t.x,t.y);
+    float c = cellular(vec3(uv * 3.,float(i + 1) * 2. * uParallaxSize + uTime * 0.3)) * min(t.x,t.y) * (5. - float(i)) / 5.;
+    c = pow(c,2.);
+    mapColor.a += min(t.x,t.y) * c;
+    mapColor.rgb += vec3(0.,c,c * float(4 - i) * 0.3);
+  }
 
-  gl_FragColor = vec4(color,1.0);
+  // mapColor.rgb /= 0.5;
+  // mapColor.a /= 2.;
+
+  // vec2 uv = vec2(vUv - vParallax.xy);
+
+  // vec2 t = 1.0 - step(1.01,uv);
+  // t *= step(-0.01,uv);
+
+  // vec3 mapColor = texture2D(uMap, uv).rgb;
+
+
+	vec3 color = vec3(mapColor);
+  // color = mix(color, vec3(1.0), 1.0 - min(t.x,t.y));
+
+  gl_FragColor = vec4(color,mapColor.a);
 }
