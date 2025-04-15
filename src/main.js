@@ -6,8 +6,11 @@ import { Pane } from 'tweakpane'
 
 import vertexShader from './shaders/base/vertex.glsl'
 import fragmentShader from './shaders/base/fragment.glsl'
-import { color, min, step } from 'three/tsl'
-import { IcosahedronGeometry, MeshBasicMaterial } from 'three/webgpu'
+import {
+	IcosahedronGeometry,
+	MeshBasicMaterial,
+	PointsMaterial,
+} from 'three/webgpu'
 
 const textureLoader = new THREE.TextureLoader()
 const perlin = textureLoader.load('/textures/perlin-rgba.png')
@@ -137,7 +140,7 @@ const material = new THREE.ShaderMaterial({
 		},
 	},
 })
-const boxGeometry = new THREE.BoxGeometry(1.3, 1.3, 1.3)
+const boxGeometry = new THREE.BoxGeometry(1, 1, 1, 5, 5, 5)
 const icoGeometry = new THREE.IcosahedronGeometry(1, 2)
 const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
 const box = new THREE.Mesh(boxGeometry, material)
@@ -149,12 +152,35 @@ torus.rotation.x = -Math.PI * 0.2
 // box.rotation.y = 0.2
 
 // scene.add(box)
+const particlesGeom = new THREE.BufferGeometry()
+const count = 1000
+const position = new Float32Array(count * 3)
+const color = new Float32Array(count * 3)
+for (let i = 0; i < count * 3; i++) {
+	position[i] = (Math.random() - 0.5) * 2
+	color[i] = Math.random()
+}
+particlesGeom.setAttribute('position', new THREE.BufferAttribute(position, 3))
+particlesGeom.setAttribute('color', new THREE.BufferAttribute(color, 3))
+
+const particleShape = textureLoader.load('/textures/particles/star.png')
+
+const pointsMaterial = new PointsMaterial({
+	size: 0.5,
+	map: particleShape,
+	// color: new THREE.Color('orange'),
+	transparent: true,
+	depthWrite: false,
+	blending: THREE.AdditiveBlending,
+	vertexColors: true,
+})
+const particles = new THREE.Points(particlesGeom, pointsMaterial)
 
 const planeGeom = new THREE.PlaneGeometry(2, 2, 50, 50)
 // planeGeom.rotateX(-Math.PI / 2)
 const plane = new THREE.Mesh(planeGeom, material)
 // plane.position.y = -2
-scene.add(plane)
+scene.add(particles)
 
 const debugMesh = new THREE.Mesh(
 	boxGeometry,
