@@ -70,6 +70,12 @@ const envMap = cubeTextureLoader.load([
 // scene.background = envMap
 
 /**
+ * uv parallax examples
+ * https://x.com/gnrmse/status/1876334608012468517
+ * https://threejs.org/examples/?q=uv#webgpu_parallax_uv
+ */
+
+/**
  * BOX
  */
 // const material = new THREE.MeshNormalMaterial()
