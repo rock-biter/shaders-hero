@@ -99,6 +99,9 @@ const material = new THREE.ShaderMaterial({
 	},
 })
 const boxGeometry = new THREE.BoxGeometry(1, 1, 1, 5, 5, 5)
+boxGeometry.computeTangents()
+// console.log(boxGeometry)
+
 const icoGeometry = new THREE.IcosahedronGeometry(1, 2)
 const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
 const box = new THREE.Mesh(boxGeometry, material)
@@ -236,7 +239,8 @@ function tic() {
 	 * tempo totale trascorso dall'inizio
 	 */
 	const time = clock.getElapsedTime()
-	// box.rotation.y = time * 0.1
+	box.rotation.y = time * 0.2
+	// box.rotation.x = time * 0.1
 
 	// const posAttr = particlesGeom.getAttribute('position')
 

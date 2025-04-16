@@ -15,6 +15,7 @@ uniform float uParallaxSize;
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vWorldPosition;
+varying vec3 vTangent;
 
 // #include ../perlin.glsl;
 // #include ../curl.glsl;
@@ -43,16 +44,18 @@ void main() {
     vec2 uv = vec2(vUv - vParallax.xy * (float(i) * 1. * uParallaxSize + 0.3));
 
     vec2 t = 1.0 - smoothstep(0.99,1.8,uv);
+    // vec2 t = 1.0 - smoothstep(1.,1.,uv);
     t *= smoothstep(-0.8,0.,uv);
+    // t *= smoothstep(0.,0.,uv);
 
-    // mapColor += texture2D(uMap, uv).rgb * min(t.x,t.y);
+    // mapColor.rgb += texture2D(uMap, uv).rgb;
     float c = cellular(vec3(uv * 3.,float(i + 1) * 2. * uParallaxSize + uTime * 0.3)) * min(t.x,t.y) * (5. - float(i)) / 5.;
     c = pow(c,2.);
     mapColor.a += min(t.x,t.y) * c;
     mapColor.rgb += vec3(0.,c,c * float(4 - i) * 0.3);
   }
 
-  // mapColor.rgb /= 0.5;
+  // mapColor.rgb /= 5.;
   // mapColor.a /= 2.;
 
   // vec2 uv = vec2(vUv - vParallax.xy);
@@ -63,8 +66,12 @@ void main() {
   // vec3 mapColor = texture2D(uMap, uv).rgb;
 
 
-	vec3 color = vec3(mapColor);
+	vec3 color = vec3(mapColor.rgb);
+	// vec3 color = vec3(0.);
   // color = mix(color, vec3(1.0), 1.0 - min(t.x,t.y));
+  // color.r = vTangent.r * 0.5 + 0.5;
+  // color.g = vTangent.g * 0.5 + 0.5;
+  // color.b = vTangent.b * 0.5 + 0.5;
 
   gl_FragColor = vec4(color,mapColor.a);
 }

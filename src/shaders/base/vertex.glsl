@@ -1,3 +1,5 @@
+attribute vec3 tangent;
+
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vWorldPosition;
@@ -49,40 +51,32 @@ mat3 alignVector(vec3 v, vec3 target) {
     return rotMatrix;
 }
 
+varying vec3 vTangent;
+
 void main() {
   vUv = uv;
-  vNormal = (modelMatrix * vec4(normal,0.0)).xyz;
+  vNormal = normalize(modelMatrix * vec4(normal,0.0)).xyz;
+  vec3 modelTangent = normalize(modelMatrix * vec4(tangent,0.0)).xyz;
+
+  vec3 biTangent = normalize(cross(vNormal, modelTangent));
+  mat3 tbn = transpose(mat3(modelTangent, biTangent, -vNormal));
+
+  vTangent = biTangent;
 
   vec3 pos = position;
   // pos.z += cnoise(position.xy * uFrequency) * uAmplitude;
   vec4 wPos = (modelMatrix * vec4(pos,1.0));
 
-  // vec3 cameraDirection = -normalize(vec3(viewMatrix[0].z, viewMatrix[1].z, viewMatrix[2].z));
-  // // vec3 cameraDirection = (viewMatrix * vec4(normalize(wPos.xyz - cameraPosition),0.0)).xyz;
-  // cameraDirection = (  viewMatrix * vec4(cameraDirection,.0)).xyz;
-  // vec3 parallax = (  viewMatrix * (vec4( normalize(-vNormal),.0))).xyz;
-  // // float alpha = arcos(dot(cameraDirection, parallax));
-  // // vec3 parallax = (vec4(-vNormal,0.0)).xyz;
-  // vParallax = projectOnPlane(parallax, cameraDirection);
-  // vParallax = projectOnPlane(vParallax, parallax);
+  vec3 camDir = normalize(tbn * cameraPosition - tbn * wPos.xyz);
+  camDir = camDir;
+  // vParallax = projectOnPlane(camDir, vec3(0.0,0.0,1.0));
+  vParallax.xy = camDir.xy;
 
-  // Calcola la direzione della camera (come già hai fatto)
-    vec3 camDir = normalize(cameraPosition - wPos.xyz);
-    vParallax = projectOnPlane(camDir, vNormal);
-    
-
-    float parallaxScale = uParallaxSize;
-    parallaxScale * length(vParallax);
-    parallaxScale /= length(dot(camDir,normal));  
-    vParallax *= parallaxScale;
-
-    // vParallax = projectOnPlane(vParallax, vNormal);
-
-    vec3 dir = (modelMatrix * vec4(vec3(0.0,0.0,1.0),0.0)).xyz;
-    vParallax = alignVector(vNormal, dir ) * vParallax;
-    vParallax.y *= sign(normal.z) >= 0.0 ? 1.0 : -1.;
-
-  // wPos.y += e;
+  // scala il vettore di parallax
+  float parallaxScale = uParallaxSize;
+  parallaxScale * length(vParallax);
+  parallaxScale /= length(dot(camDir,vec3(0.0,0.0,1.0)));  
+  vParallax *= parallaxScale;
 
   vWorldPosition = wPos.xyz;
 
