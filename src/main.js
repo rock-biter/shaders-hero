@@ -38,7 +38,7 @@ window.addEventListener('mousemove', (event) => {
  */
 const config = {
 	particles: {
-		size: 12,
+		size: 16,
 	},
 	perlin: {
 		frequency: 0.15,
