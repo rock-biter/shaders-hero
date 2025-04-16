@@ -15,6 +15,24 @@ const perlin = textureLoader.load('/textures/perlin-rgba.png')
 perlin.wrapS = THREE.RepeatWrapping
 perlin.wrapT = THREE.RepeatWrapping
 
+const mouse = new THREE.Vector2()
+
+window.addEventListener('mousemove', (event) => {
+	const x = (event.clientX / window.innerWidth) * 2 - 1
+	const y = -(event.clientY / window.innerHeight) * 2 + 1
+
+	pointsMaterial.uniforms.uSpeed.value +=
+		Math.sqrt(Math.pow(x - mouse.x, 2) + Math.pow(y - mouse.y, 2)) * 1.5
+
+	pointsMaterial.uniforms.uSpeed.value = Math.min(
+		pointsMaterial.uniforms.uSpeed.value,
+		1.5
+	)
+
+	mouse.x = x
+	mouse.y = y
+})
+
 /**
  * Debug
  */
@@ -94,26 +112,32 @@ const envMap = cubeTextureLoader.load([
  * BOX
  */
 // const material = new THREE.MeshNormalMaterial()
-const material = new THREE.ShaderMaterial({
-	vertexShader,
-	fragmentShader,
-	// wireframe: true,
-	uniforms: {},
-})
-const boxGeometry = new THREE.BoxGeometry(1, 1, 1, 5, 5, 5)
-const icoGeometry = new THREE.IcosahedronGeometry(1, 2)
-const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
-const box = new THREE.Mesh(boxGeometry, material)
-const ico = new THREE.Mesh(icoGeometry, material)
-const torus = new THREE.Mesh(torusGeometry, material)
-torus.rotation.x = -Math.PI * 0.2
+// const material = new THREE.ShaderMaterial({
+// 	vertexShader,
+// 	fragmentShader,
+// 	// wireframe: true,
+// 	uniforms: {},
+// })
+// const boxGeometry = new THREE.BoxGeometry(1, 1, 1, 5, 5, 5)
+// const icoGeometry = new THREE.IcosahedronGeometry(1, 2)
+// const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
+// const box = new THREE.Mesh(boxGeometry, material)
+// const ico = new THREE.Mesh(icoGeometry, material)
+// const torus = new THREE.Mesh(torusGeometry, material)
+// torus.rotation.x = -Math.PI * 0.2
 // torus.position.x = 3
 // box.position.x = -3
 // box.rotation.y = 0.2
 
 // scene.add(box)
+
+// const planeGeom = new THREE.PlaneGeometry(2, 2, 50, 50)
+// planeGeom.rotateX(-Math.PI / 2)
+// const plane = new THREE.Mesh(planeGeom, material)
+// plane.position.y = -2
+
 const particlesGeom = new THREE.BufferGeometry()
-const count = 301
+const count = 351
 const position = new Float32Array(count * count * 3)
 const random = new Float32Array(count * count)
 
@@ -175,23 +199,25 @@ const pointsMaterial = new THREE.ShaderMaterial({
 		uAmplitude: {
 			value: config.perlin.amplitude,
 		},
+		uMouse: {
+			value: new THREE.Vector2(0, 0),
+		},
+		uSpeed: {
+			value: 0.0,
+		},
 	},
 })
 particlesGeom.getAttribute('position').setUsage(THREE.DynamicDrawUsage)
 const particles = new THREE.Points(particlesGeom, pointsMaterial)
 
-const planeGeom = new THREE.PlaneGeometry(2, 2, 50, 50)
-// planeGeom.rotateX(-Math.PI / 2)
-const plane = new THREE.Mesh(planeGeom, material)
-// plane.position.y = -2
 scene.add(particles)
 
-const debugMesh = new THREE.Mesh(
-	boxGeometry,
-	new THREE.MeshBasicMaterial({ color: 0xffffff, envMap: envMap })
-)
+// const debugMesh = new THREE.Mesh(
+// 	boxGeometry,
+// 	new THREE.MeshBasicMaterial({ color: 0xffffff, envMap: envMap })
+// )
 
-debugMesh.position.x = -5
+// debugMesh.position.x = -5
 
 // scene.add(debugMesh)
 
@@ -200,7 +226,7 @@ debugMesh.position.x = -5
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(1, 0.5, 4)
+camera.position.set(2, 1.3, 3)
 camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 
 /**
@@ -233,6 +259,7 @@ controls.enableDamping = true
  */
 // __clock__
 const clock = new THREE.Clock()
+let time = 0.0
 
 /**
  * frame loop
@@ -241,11 +268,11 @@ function tic() {
 	/**
 	 * tempo trascorso dal frame precedente
 	 */
-	// const deltaTime = clock.getDelta()
+	const deltaTime = clock.getDelta()
 	/**
 	 * tempo totale trascorso dall'inizio
 	 */
-	const time = clock.getElapsedTime()
+	time += deltaTime
 
 	// const posAttr = particlesGeom.getAttribute('position')
 
@@ -259,9 +286,13 @@ function tic() {
 	// posAttr.needsUpdate = true
 
 	pointsMaterial.uniforms.uTime.value = time
+	pointsMaterial.uniforms.uMouse.value.lerp(mouse, deltaTime * 4)
+	pointsMaterial.uniforms.uSpeed.value *= 1 - deltaTime * 1.5
+
+	// console.log(pointsMaterial.uniforms.uSpeed.value)
 
 	// __controls_update__
-	controls.update()
+	controls.update(deltaTime)
 
 	renderer.render(scene, camera)
 

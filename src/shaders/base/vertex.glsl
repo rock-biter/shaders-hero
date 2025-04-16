@@ -22,7 +22,6 @@ void main() {
 
 
   // wPos.y += e;
-
   vWorldPosition = wPos.xyz;
 
   gl_Position = projectionMatrix * viewMatrix * wPos;
