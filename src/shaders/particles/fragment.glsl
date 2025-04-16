@@ -1,38 +1,40 @@
 uniform sampler2D uMap;
 uniform float uTime;
 
-varying vec3 vColor;
 varying float vRandom;
+varying float vDistance;
+varying float vSize;
+varying vec3 vWPos;
 
-mat2 rotate(float angle) {
-  float c = cos(angle);
-  float s = sin(angle);
-  return mat2(c, -s, s, c);
-}
+#include ../functions.glsl;
+#include ../noise.glsl;
+#include ../perlin.glsl;
+#include ../fbm.glsl;
 
 void main () {
   vec2 uv = gl_PointCoord;
   uv -= 0.5;
-  vec2 uv2 = uv;
-  uv2 = rotate(3.14159 * 0.25) * uv2;
-  
   uv *= 2.0;
-  uv = abs(uv);
+  float t = length(uv);
+  float s = remap(abs(vDistance + 3.),0.0,3.0,0.0,0.4);
+  float fog = remap(-vDistance,5., 7.,1.0,0.0);
+  t = 1. - min(1.0 , smoothstep(0.6 - s, 0.6 + s, t));
 
-  uv2 *= 2.0;
-  uv2 = abs(uv2);
+  vec3 color = vec3(0.0,0.2,0.95);
+  float time = floor(uTime * 1.); // Controlla la velocità del flash
+  float n1 = fbm(vec3(vWPos.xz * 70., uTime * 0.5),3) * 0.5 + 0.5;
+  // float n2 = random(vWPos.zx + time);
+  float glitter = pow(n1, 30.0) * 20.; 
+  glitter *= vSize;
 
-  float e = 0.2 + sin(uTime * 5. + vRandom * 10.) * 0.02;
-  float e2 = 0.3 + sin(uTime * 10. + vRandom * 20.) * 0.05;
-  uv = pow(uv,vec2(e));
-  uv2 = pow(uv2,vec2(0.2));
+  // float glitter = random(vWPos.xz + floor(uTime * 10.)) * 0.95;
+  color = mix(color, vec3(0.2,0.1,0.9),vSize);
+  color = mix(color, vec3(1.0), glitter);
+  // color = pow(color,vec3(glitter));
 
-  float d = smoothstep(0.4, 1.0, length(uv));
-  float d2 = smoothstep(0.1, 1.0, length(uv2));
 
-  float t = 1.0 - d;
-  t = mix(1.0, t,d2);
 
-  vec3 color = mix(vec3(1.0),vColor,0.5);
-  gl_FragColor = vec4(color,t);
+  color = pow(color, vec3(1.0 / 2.2));
+  gl_FragColor = vec4(color,t * fog * vSize);
+  // gl_FragColor.a += glitter * 0.5;
 }

@@ -20,10 +20,34 @@ perlin.wrapT = THREE.RepeatWrapping
  */
 const config = {
 	particles: {
-		size: 500,
+		size: 12,
+	},
+	perlin: {
+		frequency: 0.15,
+		amplitude: 1.5,
 	},
 }
 const pane = new Pane()
+
+pane
+	.addBinding(config.perlin, 'frequency', {
+		min: 0.01,
+		max: 5,
+		step: 0.01,
+	})
+	.on('change', () => {
+		pointsMaterial.uniforms.uFrequency.value = config.perlin.frequency
+	})
+
+pane
+	.addBinding(config.perlin, 'amplitude', {
+		min: 0.01,
+		max: 10,
+		step: 0.01,
+	})
+	.on('change', () => {
+		pointsMaterial.uniforms.uAmplitude.value = config.perlin.amplitude
+	})
 
 pane
 	.addBinding(config.particles, 'size', {
@@ -89,27 +113,30 @@ torus.rotation.x = -Math.PI * 0.2
 
 // scene.add(box)
 const particlesGeom = new THREE.BufferGeometry()
-const count = 10000
-const position = new Float32Array(count * 3)
-const color = new Float32Array(count * 3)
-const random = new Float32Array(count)
+const count = 301
+const position = new Float32Array(count * count * 3)
+const random = new Float32Array(count * count)
+
+let k = 0
+let size = 0.05
 
 for (let i = 0; i < count; i++) {
-	const index = i * 3
-	const dir = new THREE.Vector3().randomDirection()
-	const { x, y, z } = dir
+	for (let j = 0; j < count; j++) {
+		const index = k * 3
+		const x = i * size - count * size * 0.5
+		const y = 0
+		const z = j * size - count * size * 0.5
 
-	position[index + 0] = x * (Math.random() * 10 + 10)
-	position[index + 1] = y * (Math.random() * 10 + 10)
-	position[index + 2] = z * (Math.random() * 10 + 10)
-	color[index + 0] = Math.random()
-	color[index + 1] = Math.random()
-	color[index + 2] = Math.random()
+		position[index + 0] = x
+		position[index + 1] = y
+		position[index + 2] = z
 
-	random[index] = Math.random()
+		random[index] = Math.random()
+
+		k++
+	}
 }
 particlesGeom.setAttribute('position', new THREE.BufferAttribute(position, 3))
-particlesGeom.setAttribute('color', new THREE.BufferAttribute(color, 3))
 particlesGeom.setAttribute('aRandom', new THREE.BufferAttribute(random, 1))
 
 const particleShape = textureLoader.load('/textures/particles/star.png')
@@ -142,6 +169,12 @@ const pointsMaterial = new THREE.ShaderMaterial({
 		uTime: {
 			value: 0,
 		},
+		uFrequency: {
+			value: config.perlin.frequency,
+		},
+		uAmplitude: {
+			value: config.perlin.amplitude,
+		},
 	},
 })
 particlesGeom.getAttribute('position').setUsage(THREE.DynamicDrawUsage)
@@ -167,7 +200,7 @@ debugMesh.position.x = -5
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(5, 3, 10)
+camera.position.set(1, 0.5, 4)
 camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 
 /**
