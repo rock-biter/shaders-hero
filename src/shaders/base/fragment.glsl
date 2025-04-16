@@ -40,22 +40,24 @@ void main() {
 
   vec4 mapColor = vec4(0.0);
 
-  for(int i = 0; i < 5; i++) {
+  int iterations = 4;
+
+  for(int i = 0; i < iterations; i++) {
     vec2 uv = vec2(vUv - vParallax.xy * (float(i) * 1. * uParallaxSize + 0.3));
 
-    vec2 t = 1.0 - smoothstep(0.99,1.8,uv);
+    vec2 t = 1.0 - smoothstep(0.99,2.8,uv);
     // vec2 t = 1.0 - smoothstep(1.,1.,uv);
-    t *= smoothstep(-0.8,0.,uv);
+    t *= smoothstep(-1.8,0.,uv);
     // t *= smoothstep(0.,0.,uv);
 
     // mapColor.rgb += texture2D(uMap, uv).rgb;
-    float c = cellular(vec3(uv * 3.,float(i + 1) * 2. * uParallaxSize + uTime * 0.3)) * min(t.x,t.y) * (5. - float(i)) / 5.;
+    float c = cellular(vec3(uv * uFrequency,float(i + 1) * 2. * uParallaxSize + uTime * 0.3)) * min(t.x,t.y) * (10. - float(i)) / 10.;
     c = pow(c,2.);
     mapColor.a += min(t.x,t.y) * c;
-    mapColor.rgb += vec3(0.,c,c * float(4 - i) * 0.3);
+    mapColor.rgb += vec3(0.,c,c * float(iterations + 1 - i) / float(iterations + 1));
   }
 
-  // mapColor.rgb /= 5.;
+  // mapColor.rgb /= 3.;
   // mapColor.a /= 2.;
 
   // vec2 uv = vec2(vUv - vParallax.xy);

@@ -26,6 +26,7 @@ const config = {
 	parallax: {
 		size: 0.5,
 	},
+	frequency: 3,
 }
 const pane = new Pane()
 
@@ -37,6 +38,16 @@ pane
 	})
 	.on('change', (ev) => {
 		material.uniforms.uParallaxSize.value = ev.value
+	})
+
+pane
+	.addBinding(config, 'frequency', {
+		min: 0.1,
+		max: 10,
+		step: 0.1,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uFrequency.value = ev.value
 	})
 
 // pane.addBinding(config.ambientLight, 'color', {
@@ -86,6 +97,7 @@ const material = new THREE.ShaderMaterial({
 	fragmentShader,
 	transparent: true,
 	// wireframe: true,
+	depthWrite: false,
 	uniforms: {
 		uMap: {
 			value: map,
@@ -96,6 +108,9 @@ const material = new THREE.ShaderMaterial({
 		uTime: {
 			value: 0,
 		},
+		uFrequency: {
+			value: config.frequency,
+		},
 	},
 })
 const boxGeometry = new THREE.BoxGeometry(1, 1, 1, 5, 5, 5)
@@ -103,11 +118,18 @@ boxGeometry.computeTangents()
 // console.log(boxGeometry)
 
 const icoGeometry = new THREE.IcosahedronGeometry(1, 2)
-const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
+console.log(icoGeometry)
+
+const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 32, 200)
+torusGeometry.computeTangents()
 const box = new THREE.Mesh(boxGeometry, material)
 const ico = new THREE.Mesh(icoGeometry, material)
 const torus = new THREE.Mesh(torusGeometry, material)
 torus.rotation.x = -Math.PI * 0.2
+
+const planeGeometry = new THREE.PlaneGeometry(10, 10)
+planeGeometry.computeTangents()
+const planeMesh = new THREE.Mesh(planeGeometry, material)
 // torus.position.x = 3
 // box.position.x = -3
 // box.rotation.y = 0.2
