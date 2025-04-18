@@ -54,14 +54,14 @@ void main() {
   float d = length(vWorldPosition);
   d -= cnoise(vec4(vWorldPosition * uFrequency , uTime * 0.2)) * uAmplitude;
   d -= fbm(vWorldPosition * uFrequency * 4. + uTime * 0.1,2) * uAmplitude;
-  float c = domainWarpingFBM(vWorldPosition * uFrequency * 2. + vec3(0.0,-uTime,uTime * 0.6),1) * uAmplitude;
+  float c = domainWarpingFBM(vWorldPosition * uFrequency * 2. + vec3(0.0,-uTime,uTime * 0.6),2) * uAmplitude;
   c = pow(c,3.) * 0.15;
 
   float t = 1.0 - smoothstep(edge, edge + uSmooth1, d  + uOffset1);
   float t2 = smoothstep(edge,edge + uSmooth2, d  + uOffset2);
   float t3 = smoothstep(edge, edge + uSmooth3, d - c + uOffset3);
   // t3 = pow(t3,2.5);
-  float sparkle = cnoise(vec4(vWorldPosition * uFrequency * 10. , uTime * 2.));
+  float sparkle = cnoise(vec4(vWorldPosition * uFrequency * vec3(5.,1.,5.) , uTime * 2.));
   // sparkle 
   sparkle = pow(sparkle,4.);
 
@@ -72,7 +72,7 @@ void main() {
   // fire = mix(fire, vec3(1.0),sparkle);
   burn = mix(burn, fire,pow(t3,uFireMixExp));
 
-  float tSmoke = 1.0 - smoothstep(edge, edge + uSmooth1 * 10., d  - uOffset1 * 20. );
+  float tSmoke = 0.9 - smoothstep(edge, edge + uSmooth1 * 20., d  - uOffset1 * 15. );
 
   c *= 1.0 - smoothstep(0.9, 1.0,uv.x);
   c *= 1.0 - smoothstep(0.9, 1.0,uv.y);
@@ -80,7 +80,7 @@ void main() {
   c *= smoothstep(0.0, 0.1,uv.y);
   c *= tSmoke;
 
-  a *= t + c * c * c * 20.;
+  a *= t + c * c * 10.;
 
 
   gl_FragColor = vec4(burn,a);

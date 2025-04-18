@@ -6,6 +6,10 @@ import { Pane } from 'tweakpane'
 
 import vertexShader from './shaders/base/vertex.glsl'
 import fragmentShader from './shaders/base/fragment.glsl'
+
+import fireVertex from './shaders/fire/vertex.glsl'
+import fireFragment from './shaders/fire/fragment.glsl'
+
 import particlesFragmentShader from './shaders/particles/fragment.glsl'
 import particlesVertexShader from './shaders/particles/vertex.glsl'
 import { step } from 'three/tsl'
@@ -211,6 +215,7 @@ const material = new THREE.ShaderMaterial({
 	fragmentShader,
 	transparent: true,
 	side: THREE.DoubleSide,
+	depthWrite: false,
 	// wireframe: true,
 	uniforms: {
 		uTime: {
@@ -244,7 +249,7 @@ const backsideMap = textureLoader.load('/textures/backside.png')
 const cardMap = textureLoader.load('/textures/charizard.png', () => {
 	const aspect = cardMap.image.naturalWidth / cardMap.image.naturalHeight
 
-	const planeGeom = new THREE.PlaneGeometry(2, 2 / aspect, 50, 50)
+	const planeGeom = new THREE.PlaneGeometry(2, 2 / aspect)
 	// planeGeom.rotateX(-Math.PI / 2)
 	material.uniforms.uMap = {
 		value: cardMap,
@@ -255,7 +260,25 @@ const cardMap = textureLoader.load('/textures/charizard.png', () => {
 
 	const plane = new THREE.Mesh(planeGeom, material)
 	// plane.position.y = -2
-	scene.add(plane)
+	const fireMaterial = new THREE.ShaderMaterial({
+		fragmentShader: fireFragment,
+		vertexShader: fireVertex,
+		transparent: true,
+		side: THREE.DoubleSide,
+		uniforms: material.uniforms,
+		// wireframe: true,
+		// depthTest: false,
+		depthWrite: false,
+		depthTest: true,
+		blending: THREE.AdditiveBlending,
+	})
+	const fireGeom = new THREE.PlaneGeometry(2.3, 2.3 / aspect, 100, 200)
+	const fire = new THREE.Mesh(fireGeom, fireMaterial)
+	fire.position.z = 0.01
+
+	// fire.renderOrder = 2
+
+	scene.add(plane, fire)
 })
 
 // const boxGeometry = new THREE.BoxGeometry(1, 1, 1, 5, 5, 5)
