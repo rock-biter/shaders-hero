@@ -16,12 +16,6 @@ void main() {
   vec3 pos = position;
   // pos.z += cnoise(position.xy * uFrequency) * uAmplitude;
   vec4 wPos = (modelMatrix * vec4(pos,1.0));
-  float e = texture(uNoise,wPos.xz * uFrequency ).r;
-  e = e * 2.0 - 1.0;
-  e *= uAmplitude;
-
-
-  // wPos.y += e;
 
   vWorldPosition = wPos.xyz;
 
