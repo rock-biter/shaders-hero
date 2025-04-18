@@ -61,7 +61,7 @@ burn
 burn
 	.addBinding(config.burn, 'frequency', {
 		min: 0.01,
-		max: 2,
+		max: 3,
 		step: 0.01,
 	})
 	.on('change', (ev) => {
@@ -71,7 +71,7 @@ burn
 burn
 	.addBinding(config.burn, 'amplitude', {
 		min: 0.1,
-		max: 20,
+		max: 2,
 		step: 0.01,
 	})
 	.on('change', (ev) => {
@@ -277,6 +277,11 @@ const cardMap = textureLoader.load('/textures/charizard.png', () => {
 	fire.position.z = 0.01
 
 	// fire.renderOrder = 2
+
+	/**
+	 * add particles
+	 * https://tympanus.net/codrops/2025/02/17/implementing-a-dissolve-effect-with-shaders-and-particles-in-three-js/
+	 */
 
 	scene.add(plane, fire)
 })
