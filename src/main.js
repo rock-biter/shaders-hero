@@ -14,17 +14,91 @@ import fragmentShader from './shaders/base/fragment.glsl'
  */
 // __gui__
 const config = {
-	example: 5,
+	ambientLight: {
+		color: new THREE.Color(0xffffff),
+		intensity: 0.2,
+	},
+	hemiLight: {
+		skyColor: new THREE.Color(0.55, 0.79, 1.0),
+		groundColor: new THREE.Color(0.2, 0.35, 0.0),
+		intensity: 0.5,
+	},
+	dirLight: {
+		color: new THREE.Color(0xff3300),
+		intensity: 0.8,
+		direction: new THREE.Vector3(1, 1, 1),
+	},
 }
 const pane = new Pane()
 
-pane
-	.addBinding(config, 'example', {
-		min: 0,
-		max: 10,
-		step: 0.1,
+const ambientLight = pane.addFolder({
+	title: 'Ambient Light',
+})
+
+ambientLight.addBinding(config.ambientLight, 'color', {
+	color: { type: 'float' },
+})
+
+ambientLight
+	.addBinding(config.ambientLight, 'intensity', {
+		min: 0.0,
+		max: 1.0,
+		step: 0.01,
 	})
-	.on('change', (ev) => console.log(ev.value))
+	.on('change', (ev) => {
+		material.uniforms.uAmbientLight.value.intensity = ev.value
+	})
+
+const hemiLight = pane.addFolder({
+	title: 'Hemi Light',
+})
+
+hemiLight.addBinding(config.hemiLight, 'skyColor', {
+	color: { type: 'float' },
+})
+
+hemiLight.addBinding(config.hemiLight, 'groundColor', {
+	color: { type: 'float' },
+})
+
+hemiLight
+	.addBinding(config.hemiLight, 'intensity', {
+		min: 0.0,
+		max: 1.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uHemiLight.value.intensity = ev.value
+	})
+
+const directionalLight = pane.addFolder({
+	title: 'Directional Light',
+})
+
+directionalLight.addBinding(config.dirLight, 'color', {
+	color: { type: 'float' },
+})
+
+directionalLight
+	.addBinding(config.dirLight, 'intensity', {
+		min: 0.0,
+		max: 1.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uDirLight.value.intensity = ev.value
+	})
+
+directionalLight
+	.addBinding(config.dirLight, 'direction', {
+		x: { min: -2, max: 2, step: 0.01 },
+		y: { min: -2, max: 2, step: 0.01 },
+		z: { min: -2, max: 2, step: 0.01 },
+	})
+	.on('change', (ev) => {
+		material.uniforms.uDirLight.value.direction = ev.value
+		dirLight.position.copy(ev.value)
+	})
 
 /**
  * Scene
@@ -40,22 +114,50 @@ const scene = new THREE.Scene()
 const material = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
-	uniforms: {},
+	uniforms: {
+		uAmbientLight: {
+			value: {
+				color: config.ambientLight.color,
+				intensity: config.ambientLight.intensity,
+			},
+		},
+		uHemiLight: {
+			value: {
+				skyColor: config.hemiLight.skyColor,
+				groundColor: config.hemiLight.groundColor,
+				intensity: config.hemiLight.intensity,
+			},
+		},
+		uDirLight: {
+			value: {
+				color: config.dirLight.color,
+				intensity: config.dirLight.intensity,
+				direction: config.dirLight.direction,
+			},
+		},
+	},
 })
-const geometry = new THREE.BoxGeometry(1, 1, 1)
-const mesh = new THREE.Mesh(geometry, material)
-mesh.position.y += 0.5
-scene.add(mesh)
+const boxGeometry = new THREE.BoxGeometry(1.3, 1.3, 1.3)
+const icoGeometry = new THREE.IcosahedronGeometry(1)
+const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
+const box = new THREE.Mesh(boxGeometry, material)
+const ico = new THREE.Mesh(icoGeometry, material)
+const torus = new THREE.Mesh(torusGeometry, material)
+torus.position.x = 3
+box.position.x = -3
 
-// __floor__
-/**
- * Plane
- */
-const groundMaterial = new THREE.MeshStandardMaterial({ color: 'lightgray' })
-const groundGeometry = new THREE.PlaneGeometry(10, 10)
-groundGeometry.rotateX(-Math.PI * 0.5)
-const ground = new THREE.Mesh(groundGeometry, groundMaterial)
-scene.add(ground)
+scene.add(box, ico, torus)
+
+const dirLight = new THREE.Mesh(
+	new THREE.SphereGeometry(0.1, 4, 4),
+	new THREE.MeshBasicMaterial({ color: config.dirLight.color })
+)
+dirLight.position.copy(config.dirLight.direction)
+
+scene.add(dirLight)
+
+// background della scena
+scene.background = new THREE.Color(0x555555)
 
 /**
  * render sizes
@@ -70,15 +172,15 @@ const sizes = {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(4, 4, 4)
-camera.lookAt(new THREE.Vector3(0, 2.5, 0))
+camera.position.set(3, 2, 6)
+camera.lookAt(new THREE.Vector3(2, 2.5, 0))
 
 /**
  * Show the axes of coordinates system
  */
 // __helper_axes__
-const axesHelper = new THREE.AxesHelper(3)
-scene.add(axesHelper)
+// const axesHelper = new THREE.AxesHelper(3)
+// scene.add(axesHelper)
 
 /**
  * renderer
@@ -114,6 +216,8 @@ function tic() {
 	 * tempo totale trascorso dall'inizio
 	 */
 	// const time = clock.getElapsedTime()
+
+	ico.rotation.x += 0.01
 
 	// __controls_update__
 	controls.update()
