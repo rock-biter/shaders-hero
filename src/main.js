@@ -43,138 +43,186 @@ const config = {
 		fireScale: 4.78,
 		fireMixExp: 7.4,
 	},
+	fire: {
+		frequency: 4.3,
+		amplitude: 1.1,
+		exp: 5,
+	},
+	wireframe: false,
 }
 const pane = new Pane()
 
-const burn = pane.addFolder({ title: 'Burn' })
-
-burn
-	.addBinding(config.burn, 'progress', {
-		min: 0,
-		max: 1,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uProgress.value = ev.value
-	})
-
-burn
-	.addBinding(config.burn, 'frequency', {
-		min: 0.01,
-		max: 3,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uFrequency.value = ev.value
-	})
-
-burn
-	.addBinding(config.burn, 'amplitude', {
-		min: 0.1,
-		max: 2,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uAmplitude.value = ev.value
-	})
-
-burn.addBinding(config.burn, 'fireColor', {
-	color: { type: 'float' },
+pane.addBinding(config, 'wireframe').on('change', (ev) => {
+	fireMaterial.wireframe = ev.value
 })
 
-burn
-	.addBinding(config.burn, 'fireScale', {
-		min: 0,
-		max: 20,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uFireScale.value = ev.value
+// Burn
+{
+	const burn = pane.addFolder({ title: 'Burn' })
+
+	burn
+		.addBinding(config.burn, 'progress', {
+			min: 0,
+			max: 1,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uProgress.value = ev.value
+		})
+
+	burn
+		.addBinding(config.burn, 'frequency', {
+			min: 0.01,
+			max: 3,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uFrequency.value = ev.value
+		})
+
+	burn
+		.addBinding(config.burn, 'amplitude', {
+			min: 0.1,
+			max: 2,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uAmplitude.value = ev.value
+		})
+
+	burn.addBinding(config.burn, 'fireColor', {
+		color: { type: 'float' },
 	})
 
-burn
-	.addBinding(config.burn, 'fireExp', {
-		min: 1,
-		max: 10,
-		step: 0.1,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uFireExp.value = ev.value
+	burn
+		.addBinding(config.burn, 'fireScale', {
+			min: 0,
+			max: 20,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uFireScale.value = ev.value
+		})
+
+	burn
+		.addBinding(config.burn, 'fireExp', {
+			min: 1,
+			max: 10,
+			step: 0.1,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uFireExp.value = ev.value
+		})
+
+	burn
+		.addBinding(config.burn, 'fireMixExp', {
+			min: 1,
+			max: 32,
+			step: 0.1,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uFireMixExp.value = ev.value
+		})
+
+	burn
+		.addBinding(config.burn, 'offset3', {
+			min: -1.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uOffset3.value = ev.value
+		})
+
+	burn
+		.addBinding(config.burn, 'smooth3', {
+			min: -1.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uSmooth3.value = ev.value
+		})
+
+	burn.addBinding(config.burn, 'burnColor', {
+		color: { type: 'float' },
 	})
 
-burn
-	.addBinding(config.burn, 'fireMixExp', {
-		min: 1,
-		max: 32,
-		step: 0.1,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uFireMixExp.value = ev.value
-	})
+	burn
+		.addBinding(config.burn, 'offset2', {
+			min: -1.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uOffset2.value = ev.value
+		})
 
-burn
-	.addBinding(config.burn, 'offset3', {
-		min: -1.0,
-		max: 1.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uOffset3.value = ev.value
-	})
+	burn
+		.addBinding(config.burn, 'smooth2', {
+			min: -1.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uSmooth2.value = ev.value
+		})
 
-burn
-	.addBinding(config.burn, 'smooth3', {
-		min: -1.0,
-		max: 1.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uSmooth3.value = ev.value
-	})
+	burn
+		.addBinding(config.burn, 'burnMixExp', {
+			min: 1,
+			max: 32,
+			step: 0.1,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uBurnMixExp.value = ev.value
+		})
 
-burn.addBinding(config.burn, 'burnColor', {
-	color: { type: 'float' },
-})
+	burn
+		.addBinding(config.burn, 'offset1', {
+			min: -1.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uOffset1.value = ev.value
+		})
+}
 
-burn
-	.addBinding(config.burn, 'offset2', {
-		min: -1.0,
-		max: 1.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uOffset2.value = ev.value
-	})
+// Fire
+{
+	const fire = pane.addFolder({ title: 'Fire' })
 
-burn
-	.addBinding(config.burn, 'smooth2', {
-		min: -1.0,
-		max: 1.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uSmooth2.value = ev.value
-	})
+	fire
+		.addBinding(config.fire, 'frequency', {
+			min: 0.01,
+			max: 10,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uFireFrequency.value = ev.value
+		})
 
-burn
-	.addBinding(config.burn, 'burnMixExp', {
-		min: 1,
-		max: 32,
-		step: 0.1,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uBurnMixExp.value = ev.value
-	})
+	fire
+		.addBinding(config.fire, 'amplitude', {
+			min: 0,
+			max: 3,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uFireAmplitude.value = ev.value
+		})
 
-burn
-	.addBinding(config.burn, 'offset1', {
-		min: -1.0,
-		max: 1.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uOffset1.value = ev.value
-	})
+	fire
+		.addBinding(config.fire, 'exp', {
+			min: 0.01,
+			max: 10,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uFireExpAmplitude.value = ev.value
+		})
+}
 
 // pane.addBinding(config.ambientLight, 'color', {
 // 	color: { type: 'float' },
@@ -242,7 +290,24 @@ const material = new THREE.ShaderMaterial({
 		uFireExp: { value: config.burn.fireExp },
 		uFireScale: { value: config.burn.fireScale },
 		uFireMixExp: { value: config.burn.fireMixExp },
+		uFireFrequency: { value: config.fire.frequency },
+		uFireAmplitude: { value: config.fire.amplitude },
+		uFireExpAmplitude: { value: config.fire.exp },
+		uPointerVelocity: { value: new THREE.Vector2(0, 0) },
 	},
+})
+
+const fireMaterial = new THREE.ShaderMaterial({
+	fragmentShader: fireFragment,
+	vertexShader: fireVertex,
+	transparent: true,
+	side: THREE.DoubleSide,
+	uniforms: material.uniforms,
+	wireframe: config.wireframe,
+	// depthTest: false,
+	depthWrite: false,
+	depthTest: true,
+	blending: THREE.AdditiveBlending,
 })
 
 const backsideMap = textureLoader.load('/textures/backside.png')
@@ -260,19 +325,8 @@ const cardMap = textureLoader.load('/textures/charizard.png', () => {
 
 	const plane = new THREE.Mesh(planeGeom, material)
 	// plane.position.y = -2
-	const fireMaterial = new THREE.ShaderMaterial({
-		fragmentShader: fireFragment,
-		vertexShader: fireVertex,
-		transparent: true,
-		side: THREE.DoubleSide,
-		uniforms: material.uniforms,
-		// wireframe: true,
-		// depthTest: false,
-		depthWrite: false,
-		depthTest: true,
-		blending: THREE.AdditiveBlending,
-	})
-	const fireGeom = new THREE.PlaneGeometry(2.3, 2.3 / aspect, 100, 200)
+
+	const fireGeom = new THREE.PlaneGeometry(2, 2 / aspect, 150, 300)
 	const fire = new THREE.Mesh(fireGeom, fireMaterial)
 	fire.position.z = 0.01
 
@@ -406,6 +460,29 @@ controls.enableDamping = true
  */
 // __clock__
 const clock = new THREE.Clock()
+let time = 0
+
+const pointer = new THREE.Vector2()
+const prevPointer = new THREE.Vector2()
+const velocity = new THREE.Vector2()
+let isMoving = false
+
+window.addEventListener('mousemove', (ev) => {
+	if (!isMoving) return
+	pointer.x = (ev.clientX / sizes.width) * 2 - 1
+	pointer.y = -(ev.clientY / sizes.height) * 2 + 1
+})
+
+window.addEventListener('mousedown', (ev) => {
+	isMoving = true
+	pointer.x = (ev.clientX / sizes.width) * 2 - 1
+	pointer.y = -(ev.clientY / sizes.height) * 2 + 1
+	prevPointer.copy(pointer)
+})
+
+window.addEventListener('mouseup', (ev) => {
+	isMoving = false
+})
 
 /**
  * frame loop
@@ -414,11 +491,12 @@ function tic() {
 	/**
 	 * tempo trascorso dal frame precedente
 	 */
-	// const deltaTime = clock.getDelta()
+	const deltaTime = clock.getDelta()
+	time += deltaTime
 	/**
 	 * tempo totale trascorso dall'inizio
 	 */
-	const time = clock.getElapsedTime()
+	// const time = clock.getElapsedTime()
 
 	// const posAttr = particlesGeom.getAttribute('position')
 
@@ -428,11 +506,14 @@ function tic() {
 	// 	const y = Math.sin(x + time) * 0.5 + Math.cos(z + time) * 0.5
 	// 	posAttr.setY(i, y)
 	// }
+	prevPointer.lerp(pointer, deltaTime * 3)
+	velocity.copy(pointer).sub(prevPointer)
 
 	// posAttr.needsUpdate = true
 
 	pointsMaterial.uniforms.uTime.value = time
 	material.uniforms.uTime.value = time
+	fireMaterial.uniforms.uPointerVelocity.value = velocity
 
 	// __controls_update__
 	controls.update()

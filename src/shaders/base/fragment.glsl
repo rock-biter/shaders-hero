@@ -80,8 +80,7 @@ void main() {
   c *= smoothstep(0.0, 0.1,uv.y);
   c *= tSmoke;
 
-  a *= t + c * c * 10.;
-
+  a *= t + c * c * 5.;
 
   gl_FragColor = vec4(burn,a);
   // gl_FragColor.rgb = vec3(c);

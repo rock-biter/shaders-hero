@@ -23,6 +23,12 @@ uniform float uFireExp;
 uniform float uFireScale;
 uniform float uFireMixExp;
 
+uniform float uFireFrequency;
+uniform float uFireAmplitude;
+uniform float uFireExpAmplitude;
+
+uniform vec2 uPointerVelocity;
+
 #include ../noise.glsl;
 #include ../perlin.glsl;
 #include ../fbm.glsl;
@@ -37,17 +43,25 @@ void main() {
 
   float edge = (1.0 - uProgress * 1.5) * (1.5 + uAmplitude);
   float d = length(wPos.xyz);
-  d -= cnoise(vec4(wPos.xyz * uFrequency , uTime * 0.2)) * uAmplitude * 0.8;
-  d -= fbm(wPos.xyz * uFrequency * 4. + uTime * 0.1,2) * uAmplitude * 0.8;
+  d -= cnoise(vec4(wPos.xyz * uFrequency , uTime * 0.2)) * uAmplitude * 1.;
+  d -= fbm(wPos.xyz * uFrequency * 4. + uTime * 0.1,2) * uAmplitude * 1.;
 
-  // float t = 1.0 - smoothstep(edge, edge + uSmooth1, d + uOffset1);
-  float t = max(0.,d + uOffset1 - edge + 0.8);
-  t = pow(t,4.) * 0.5 - 0.01;
-  t *= 1. - uProgress * 0.5;
-  vHeight = t;
-  wPos.z += t;
-  wPos.x += sin(t * 5. + wPos.y + uTime * 4.) * t * 0.1;
-  wPos.y += cos(t * 4. + wPos.x + uTime * 6.) * t * 0.1 + 0.8 * t * t;
+// Fire
+  float t = smoothstep(edge - 0.3, edge + 0.1, d + uOffset1);
+  t *= 1. - smoothstep(edge + 0.2, edge + 0.3, d + uOffset1);
+  float fireHeight = cnoise(wPos.xyz * uFireFrequency + vec3(uTime * 0.5));
+  float h = fireHeight;
+  float posH = max(0.0,h);
+  fireHeight = fireHeight * 0.5 + 0.5;
+  fireHeight = pow(fireHeight, uFireExpAmplitude);
+  fireHeight *= uFireAmplitude;
+  fireHeight *= 1. - uProgress * 0.3;
+
+  vHeight = fireHeight * t;
+  wPos.z += vHeight;
+  wPos.x += cnoise(vec3(wPos.xy, wPos.z + uTime)) * wPos.z * 0.5 - uPointerVelocity.x * wPos.z * wPos.z * 10.;
+  wPos.y += cnoise(vec3(wPos.xy + 50., wPos.z + uTime)) * wPos.z * 0.5;
+  wPos.y += 1.5 * wPos.z * wPos.z;
   vWorldPosition = wPos.xyz;
 
   gl_Position = projectionMatrix * viewMatrix * wPos;

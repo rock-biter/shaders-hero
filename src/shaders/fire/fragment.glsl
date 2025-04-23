@@ -55,44 +55,31 @@ void main() {
   float d = length(vWorldPosition);
   d -= cnoise(vec4(vWorldPosition * uFrequency , uTime * 0.2)) * uAmplitude * 0.9;
   d -= fbm(vWorldPosition * uFrequency * 4. + uTime * 0.1,2) * uAmplitude * 0.9;
-  float c = cnoise(vWorldPosition * uFrequency * vec3(2.,2.,0.3) + vec3(uTime,uTime,uTime * 1.)) * 2.;
-  // c = pow(c,3.) * 0.15;
+
 
   float t = 1.0 - smoothstep(edge, edge + uSmooth1 * 0.2, d  + uOffset1 * 5.);
-  // float t2 = smoothstep(edge,edge + uSmooth2, d  + uOffset2);
-  // float t3 = smoothstep(edge, edge + uSmooth3, d - c + uOffset3);
-  // t3 = pow(t3,2.5);
   float sparkle = cnoise(vec4(vWorldPosition * uFrequency * vec3(8.,8.,-1.) , uTime * 5.));
+
   // sparkle 
   sparkle = pow(sparkle,4.);
-
-  // t3 += sparkle * t3;
-  // t3 = max(0.0,t3);
-  vec3 fire = uFireColor * (1. + sparkle * 10.);
+  vec3 fire = uFireColor;// * (1. + sparkle * 15.);
 
   a = 1.;
   a *= 1.0 - smoothstep(0.85, 1.,uv.x);
   a *= 1.0 - smoothstep(0.85, 1.0,uv.y);
-  a *= smoothstep(0.0, 0.1,uv.x);
-  a *= smoothstep(0.0, 0.1,uv.y);
+  a *= smoothstep(0.0, 0.15,uv.x);
+  a *= smoothstep(0.0, 0.15,uv.y);
   // c *= tSmoke;
 
-  // a *= t + c * c * 15.;
-  float fireEdge = noise(vec3(vWorldPosition.xy * 15. , uTime * 5.));
-  float fireEdge2 = noise(vec3(vWorldPosition.xy * 5. , uTime * 5.)) * 0.5 + 0.5;
-  fire *= smoothstep(-0.1,0.2,vHeight - fireEdge * 0.3) * 0.5 + 0.5;
-  fire *= smoothstep(0.00, 0.1, vHeight );
-  fire.r *= 1.3;
-  // fire.b *= 1.1;
-  // fire.g *= 0.9;
+  float fireEdge = noise(vec3(vWorldPosition.xy * 20. , uTime * 5.));
+  float fireEdge2 = noise(vec3(vWorldPosition.xy * 10. , uTime * 10.)) * 0.5 + 0.5;
+  fire *= smoothstep(-0.2,0.3,vHeight - fireEdge * 0.1 ) * 0.7 + 0.3;
 
-  fire *= max(1., (vHeight * vHeight * vHeight + fireEdge2 * 0.2 - c * c * 0.25 ) * uFireScale * 3.);
+  fire *= max(1., (pow(vHeight,3. ) + fireEdge2 * 0.2  ) * uFireScale * 3.);
 
-  a *= max(0.0,1.0 - vHeight * c * 6.);
-  float inverseProgress = 1. - uProgress;
-  a *= 1.0 - smoothstep(0.5 * inverseProgress,2.5 * inverseProgress + uProgress * (c * c * 0.3 ),vHeight * 1.8);
-
+  // granular effect
   fire *= (1.0 - random(fract(uv * 100.)) * 0.2);
+  a *= smoothstep(0.001, 0.03, vHeight );
 
   gl_FragColor = vec4(fire,a);
   // gl_FragColor.rgb = vec3(c);
