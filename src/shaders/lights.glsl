@@ -42,7 +42,7 @@ vec3 dirLight(vec3 lightColor, float intensity, vec3 lightDirection, vec3 normal
   vec3 dir = normalize(lightDirection);
   float angle = max(0.0,dot(dir, normal));
   vec3 diffuse = lightColor * angle;
-  vec3 specular = phongSpecular(viewDir, lightDirection, lightColor, normal, glossiness);
+  vec3 specular = phongSpecular(viewDir, dir, lightColor, normal, glossiness);
 
   vec3 light = (diffuse + specular) * intensity;
 
@@ -67,7 +67,7 @@ vec3 pointLight(vec3 lightColor, float intensity, vec3 lightPosition, vec3 posit
   vec3 dir = normalize(lightDirection);
   float angle = max(0.0,dot(dir, normal));
   vec3 diffuse = lightColor * angle;
-  vec3 specular = phongSpecular(viewDir, lightDirection, lightColor, normal, glossiness);
+  vec3 specular = phongSpecular(viewDir, dir, lightColor, normal, glossiness);
 
   vec3 light = (diffuse + specular) * intensity * decay;
 
