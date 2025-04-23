@@ -8,6 +8,8 @@ varying vec3 vWorldPosition;
 uniform AmbientLight uAmbientLight;
 uniform HemiLight uHemiLight;
 uniform DirectionalLight uDirLight;
+uniform PointLight uPointLight;
+uniform SpotLight uSpotLight;
 uniform float uGlossiness;
 
 void main() {
@@ -25,6 +27,12 @@ void main() {
   // Dircetional light
 
   light += dirLight(uDirLight.color, uDirLight.intensity, uDirLight.direction, normal, viewDir, uGlossiness);
+  
+  // Point light
+  light += pointLight(uPointLight.color, uPointLight.intensity, uPointLight.position, vWorldPosition, normal, uPointLight.maxDistance, viewDir, uGlossiness );
+
+  // SPot light
+  light += spotLight(uSpotLight.color, uSpotLight.intensity, uSpotLight.position, uSpotLight.target, uSpotLight.angle,  uSpotLight.penumbra, vWorldPosition, normal, uSpotLight.maxDistance, viewDir, uGlossiness );
 
   vec3 baseColor = vec3(1.0,1.0,1.0);
 
