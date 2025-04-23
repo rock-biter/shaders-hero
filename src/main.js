@@ -8,6 +8,7 @@ import { Pane } from 'tweakpane'
 
 import vertexShader from './shaders/base/vertex.glsl'
 import fragmentShader from './shaders/base/fragment.glsl'
+import { step } from 'three/tsl'
 
 /**
  * Debug
@@ -21,83 +22,106 @@ const config = {
 	hemiLight: {
 		skyColor: new THREE.Color(0.55, 0.79, 1.0),
 		groundColor: new THREE.Color(0.2, 0.35, 0.0),
-		intensity: 0.5,
+		intensity: 0.3,
 	},
 	dirLight: {
-		color: new THREE.Color(0xff3300),
-		intensity: 0.8,
-		direction: new THREE.Vector3(1, 1, 1),
+		color: new THREE.Color(1.0, 0.3, 0.2),
+		intensity: 0.9,
+		direction: new THREE.Vector3(2, 2, 2),
 	},
+	glossiness: 24,
 }
 const pane = new Pane()
 
-const ambientLight = pane.addFolder({
-	title: 'Ambient Light',
-})
+// Ambient Light
+{
+	const ambientLight = pane.addFolder({
+		title: 'Ambient Light',
+		expanded: false,
+	})
 
-ambientLight.addBinding(config.ambientLight, 'color', {
-	color: { type: 'float' },
-})
+	ambientLight.addBinding(config.ambientLight, 'color', {
+		color: { type: 'float' },
+	})
 
-ambientLight
-	.addBinding(config.ambientLight, 'intensity', {
-		min: 0.0,
-		max: 1.0,
-		step: 0.01,
+	ambientLight
+		.addBinding(config.ambientLight, 'intensity', {
+			min: 0.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uAmbientLight.value.intensity = ev.value
+		})
+}
+
+// Hemi Light
+{
+	const hemiLight = pane.addFolder({
+		title: 'Hemi Light',
+		expanded: false,
+	})
+
+	hemiLight.addBinding(config.hemiLight, 'skyColor', {
+		color: { type: 'float' },
+	})
+
+	hemiLight.addBinding(config.hemiLight, 'groundColor', {
+		color: { type: 'float' },
+	})
+
+	hemiLight
+		.addBinding(config.hemiLight, 'intensity', {
+			min: 0.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uHemiLight.value.intensity = ev.value
+		})
+}
+
+// Directional Light
+{
+	const directionalLight = pane.addFolder({
+		title: 'Directional Light',
+		expanded: true,
+	})
+
+	directionalLight.addBinding(config.dirLight, 'color', {
+		color: { type: 'float' },
+	})
+
+	directionalLight
+		.addBinding(config.dirLight, 'intensity', {
+			min: 0.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uDirLight.value.intensity = ev.value
+		})
+
+	directionalLight
+		.addBinding(config.dirLight, 'direction', {
+			x: { min: -4, max: 4, step: 0.01 },
+			y: { min: -4, max: 4, step: 0.01 },
+			z: { min: -4, max: 4, step: 0.01 },
+		})
+		.on('change', (ev) => {
+			material.uniforms.uDirLight.value.direction = ev.value
+			dirLight.position.copy(ev.value)
+		})
+}
+
+pane
+	.addBinding(config, 'glossiness', {
+		min: 1,
+		max: 64,
+		step: 0.1,
 	})
 	.on('change', (ev) => {
-		material.uniforms.uAmbientLight.value.intensity = ev.value
-	})
-
-const hemiLight = pane.addFolder({
-	title: 'Hemi Light',
-})
-
-hemiLight.addBinding(config.hemiLight, 'skyColor', {
-	color: { type: 'float' },
-})
-
-hemiLight.addBinding(config.hemiLight, 'groundColor', {
-	color: { type: 'float' },
-})
-
-hemiLight
-	.addBinding(config.hemiLight, 'intensity', {
-		min: 0.0,
-		max: 1.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uHemiLight.value.intensity = ev.value
-	})
-
-const directionalLight = pane.addFolder({
-	title: 'Directional Light',
-})
-
-directionalLight.addBinding(config.dirLight, 'color', {
-	color: { type: 'float' },
-})
-
-directionalLight
-	.addBinding(config.dirLight, 'intensity', {
-		min: 0.0,
-		max: 1.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uDirLight.value.intensity = ev.value
-	})
-
-directionalLight
-	.addBinding(config.dirLight, 'direction', {
-		x: { min: -2, max: 2, step: 0.01 },
-		y: { min: -2, max: 2, step: 0.01 },
-		z: { min: -2, max: 2, step: 0.01 },
-	})
-	.on('change', (ev) => {
-		material.uniforms.uDirLight.value.direction = ev.value
-		dirLight.position.copy(ev.value)
+		material.uniforms.uGlossiness.value = ev.value
 	})
 
 /**
@@ -115,6 +139,9 @@ const material = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
 	uniforms: {
+		uGlossiness: {
+			value: config.glossiness,
+		},
 		uAmbientLight: {
 			value: {
 				color: config.ambientLight.color,

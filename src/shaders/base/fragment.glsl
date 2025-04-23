@@ -1,5 +1,6 @@
 varying vec2 vUv;
 varying vec3 vNormal;
+varying vec3 vWorldPosition;
 
 #include ../functions.glsl;
 #include ../lights.glsl;
@@ -7,22 +8,23 @@ varying vec3 vNormal;
 uniform AmbientLight uAmbientLight;
 uniform HemiLight uHemiLight;
 uniform DirectionalLight uDirLight;
+uniform float uGlossiness;
 
 void main() {
 
   vec3 light = vec3(0.0);
   vec3 normal = normalize(vNormal);
+  vec3 viewDir = normalize(vWorldPosition - cameraPosition);
 
   // ambient light
   // light += ambientLight(uAmbientLight.color, uAmbientLight.intensity);
 
   // Hemi light
-
   light += hemiLight(uHemiLight.skyColor, uHemiLight.groundColor, uHemiLight.intensity, normal);
 
   // Dircetional light
 
-  light += dirLight(uDirLight.color, uDirLight.intensity, uDirLight.direction, normal);
+  light += dirLight(uDirLight.color, uDirLight.intensity, uDirLight.direction, normal, viewDir, uGlossiness);
 
   vec3 baseColor = vec3(1.0,1.0,1.0);
 
