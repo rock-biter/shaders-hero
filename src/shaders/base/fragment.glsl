@@ -11,6 +11,7 @@ uniform DirectionalLight uDirLight;
 uniform PointLight uPointLight;
 uniform SpotLight uSpotLight;
 uniform float uGlossiness;
+uniform samplerCube uEnvMap;
 
 void main() {
 
@@ -33,6 +34,16 @@ void main() {
 
   // SPot light
   light += spotLight(uSpotLight.color, uSpotLight.intensity, uSpotLight.position, uSpotLight.target, uSpotLight.angle,  uSpotLight.penumbra, vWorldPosition, normal, uSpotLight.maxDistance, viewDir, uGlossiness );
+
+  //envmap
+  vec3 reflectDir = normalize(reflect(viewDir, normal));
+  reflectDir.x *= -1.0;
+  vec3 envColor = texture(uEnvMap, reflectDir).rgb;
+
+  float fresnel = 1.0 - max(0.0, dot(-viewDir, normal));
+  fresnel = pow(fresnel, 2.0);
+
+  light += envColor * fresnel;
 
   vec3 baseColor = vec3(1.0,1.0,1.0);
 

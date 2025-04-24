@@ -285,6 +285,18 @@ pane
 const scene = new THREE.Scene()
 // scene.background = new THREE.Color(0xdedede)
 
+const cubeTextureLoader = new THREE.CubeTextureLoader()
+const envMap = cubeTextureLoader.load([
+	'/env/01/px.png',
+	'/env/01/nx.png',
+	'/env/01/py.png',
+	'/env/01/ny.png',
+	'/env/01/pz.png',
+	'/env/01/nz.png',
+])
+
+scene.background = envMap
+
 // __box__
 /**
  * BOX
@@ -294,9 +306,12 @@ const material = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
 	defines: {
-		TOON: config.toon,
+		// TOON: config.toon,
 	},
 	uniforms: {
+		uEnvMap: {
+			value: envMap,
+		},
 		uGlossiness: {
 			value: config.glossiness,
 		},
@@ -354,7 +369,7 @@ planeGeometry.rotateX(-Math.PI / 2)
 const plane = new THREE.Mesh(planeGeometry, material)
 plane.position.y = -2
 
-scene.add(box, ico, torus, plane)
+scene.add(box, ico, torus)
 
 const dirLight = new THREE.Mesh(
 	new THREE.SphereGeometry(0.1, 4, 4),
@@ -362,7 +377,7 @@ const dirLight = new THREE.Mesh(
 )
 dirLight.position.copy(config.dirLight.direction)
 
-scene.add(dirLight)
+// scene.add(dirLight)
 
 const pointLightMesh = new THREE.Mesh(
 	new THREE.SphereGeometry(0.1, 4, 4),
@@ -370,7 +385,7 @@ const pointLightMesh = new THREE.Mesh(
 )
 pointLightMesh.position.copy(config.pointLight.position)
 
-scene.add(pointLightMesh)
+// scene.add(pointLightMesh)
 
 const spotLightMesh = new THREE.Mesh(
 	new THREE.SphereGeometry(0.1, 4, 4),
@@ -378,10 +393,10 @@ const spotLightMesh = new THREE.Mesh(
 )
 spotLightMesh.position.copy(config.spotLight.position)
 
-scene.add(spotLightMesh)
+// scene.add(spotLightMesh)
 
 // background della scena
-scene.background = new THREE.Color(0x555555)
+// scene.background = new THREE.Color(0x555555)
 
 /**
  * render sizes
