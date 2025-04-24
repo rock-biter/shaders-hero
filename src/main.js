@@ -22,31 +22,47 @@ const config = {
 	hemiLight: {
 		skyColor: new THREE.Color(0.55, 0.79, 1.0),
 		groundColor: new THREE.Color(0.2, 0.35, 0.0),
-		intensity: 0.3,
+		intensity: 0.2,
 	},
 	dirLight: {
 		color: new THREE.Color(1.0, 0.3, 0.2),
-		intensity: 1,
+		intensity: 0.8,
 		direction: new THREE.Vector3(2, 2, 2),
 	},
 	pointLight: {
 		color: new THREE.Color(0.25, 0.25, 1.0),
-		intensity: 2,
+		intensity: 1,
 		position: new THREE.Vector3(-2, 1.5, 1.5),
-		maxDistance: 10,
+		maxDistance: 20,
 	},
 	spotLight: {
 		color: new THREE.Color(0x22ff11),
-		intensity: 1.0,
+		intensity: 0.3,
 		position: new THREE.Vector3(-1, 2, -2),
 		target: new THREE.Vector3(1, 0, 1),
-		maxDistance: 10,
+		maxDistance: 20,
 		angle: Math.PI / 2,
 		penumbra: 0.08,
 	},
 	glossiness: 24,
+	toon: 3,
 }
 const pane = new Pane()
+
+pane
+	.addBinding(config, 'toon', {
+		min: 1,
+		max: 10,
+		step: 1,
+	})
+	.on('change', (ev) => {
+		if (ev.value < 2) {
+			delete material.defines.TOON
+		} else {
+			material.defines.TOON = ev.value
+		}
+		material.needsUpdate = true
+	})
 
 // Ambient Light
 {
@@ -180,7 +196,7 @@ const pane = new Pane()
 {
 	const spotLight = pane.addFolder({
 		title: 'Spot Light',
-		expanded: true,
+		expanded: false,
 	})
 
 	spotLight
@@ -277,6 +293,9 @@ const scene = new THREE.Scene()
 const material = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
+	defines: {
+		TOON: config.toon,
+	},
 	uniforms: {
 		uGlossiness: {
 			value: config.glossiness,
