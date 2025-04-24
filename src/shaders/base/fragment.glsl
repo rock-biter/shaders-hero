@@ -23,17 +23,17 @@ void main() {
   // light += ambientLight(uAmbientLight.color, uAmbientLight.intensity);
 
   // Hemi light
-  light += hemiLight(uHemiLight.skyColor, uHemiLight.groundColor, uHemiLight.intensity, normal);
+  // light += hemiLight(uHemiLight.skyColor, uHemiLight.groundColor, uHemiLight.intensity, normal);
 
   // Dircetional light
 
-  light += dirLight(uDirLight.color, uDirLight.intensity, uDirLight.direction, normal, viewDir, uGlossiness);
+  // light += dirLight(uDirLight.color, uDirLight.intensity, uDirLight.direction, normal, viewDir, uGlossiness);
   
   // Point light
-  light += pointLight(uPointLight.color, uPointLight.intensity, uPointLight.position, vWorldPosition, normal, uPointLight.maxDistance, viewDir, uGlossiness );
+  // light += pointLight(uPointLight.color, uPointLight.intensity, uPointLight.position, vWorldPosition, normal, uPointLight.maxDistance, viewDir, uGlossiness );
 
   // SPot light
-  light += spotLight(uSpotLight.color, uSpotLight.intensity, uSpotLight.position, uSpotLight.target, uSpotLight.angle,  uSpotLight.penumbra, vWorldPosition, normal, uSpotLight.maxDistance, viewDir, uGlossiness );
+  // light += spotLight(uSpotLight.color, uSpotLight.intensity, uSpotLight.position, uSpotLight.target, uSpotLight.angle,  uSpotLight.penumbra, vWorldPosition, normal, uSpotLight.maxDistance, viewDir, uGlossiness );
 
   //envmap
   vec3 reflectDir = normalize(reflect(viewDir, normal));
@@ -43,11 +43,16 @@ void main() {
   float fresnel = 1.0 - max(0.0, dot(-viewDir, normal));
   fresnel = pow(fresnel, 2.0);
 
-  light += envColor * fresnel;
+  light += envColor;// * fresnel;
 
   vec3 baseColor = vec3(1.0,1.0,1.0);
 
   vec3 color = baseColor * light;
+
+  // color = pow(color, vec3(1. / 2.2));
   gl_FragColor = vec4(color,1.0);
   // gl_FragColor.rgb = vec3(lightAngle);
+
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
 }
