@@ -430,8 +430,8 @@ const renderer = new THREE.WebGLRenderer({
 document.body.appendChild(renderer.domElement)
 handleResize()
 
-renderer.toneMapping = THREE.ACESFilmicToneMapping
-renderer.toneMappingExposure = 2.5
+// renderer.toneMapping = THREE.ACESFilmicToneMapping
+// renderer.toneMappingExposure = 2.5
 
 /**
  * OrbitControls
