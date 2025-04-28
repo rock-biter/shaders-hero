@@ -48,3 +48,65 @@ float fbm(vec3 x, int octaves) {
   v /= normalization;
 	return v;
 }
+
+// Turbulence
+float turbulenceFBM(vec3 x, int octaves) {
+	float v = 0.0;
+	float a = 1.;
+  float normalization = 0.;
+	vec3 shift = vec3(100);
+	for (int i = 0; i < octaves; ++i) {
+    normalization += a;
+		float n = cnoise(x);
+		n = abs(n);
+		v += a * n;
+		x = x * 2.0 + shift;
+		a *= 0.5;
+	}
+  v /= normalization;
+	return v;
+}
+
+// Ridged
+float ridgedFBM(vec3 x, int octaves) {
+	float v = 0.0;
+	float a = 1.;
+  float normalization = 0.;
+	vec3 shift = vec3(100);
+	for (int i = 0; i < octaves; ++i) {
+    normalization += a;
+		float n = cnoise(x);
+		n = 1. - abs(n);
+		v += a * n;
+		x = x * 2.0 + shift;
+		a *= 0.5;
+	}
+  v /= normalization;
+	v = pow(v, 2.);
+	return v;
+}
+
+float domainWarpFBM(vec3 x, int octaves) {
+	
+	vec3 offset = vec3(
+		fbm(x, octaves),
+		fbm(x + vec3(45.236, 22.458,0.0), octaves),
+		0.0
+	);
+
+	vec3 offset2 = vec3(
+		fbm(x + 4. * offset * vec3(4.561,1.256,3.156), octaves),
+		fbm(x + 4. * offset * vec3(3.152, 0.459, 2.156), octaves),
+		0.0
+	);
+
+	// vec3 offset3 = vec3(
+	// 	fbm(x + 4. * offset2 * vec3(8.569,2.356,1.259), octaves),
+	// 	fbm(x + 4. * offset2 * vec3(7.149,0.2485,3.154), octaves),
+	// 	0.0
+	// );
+
+	float v = fbm(x + offset2, octaves);
+
+	return v;
+}

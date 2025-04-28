@@ -90,14 +90,16 @@ const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
 const box = new THREE.Mesh(boxGeometry, material)
 const ico = new THREE.Mesh(icoGeometry, material)
 const torus = new THREE.Mesh(torusGeometry, material)
-torus.position.x = 3
+// torus.position.x = 3
 // box.position.x = -3
+torus.rotation.x = -Math.PI * 0.2
+torus.scale.setScalar(3)
 const planeGeometry = new THREE.PlaneGeometry(5, 5, 50, 50)
 // planeGeometry.rotateX(-Math.PI / 2)
 const plane = new THREE.Mesh(planeGeometry, material)
 // plane.position.y = -2
 
-scene.add(box)
+scene.add(torus)
 
 // background della scena
 scene.background = new THREE.Color(0x000033)
