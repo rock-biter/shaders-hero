@@ -8,7 +8,9 @@ import { Pane } from 'tweakpane'
 
 import vertexShader from './shaders/base/vertex.glsl'
 import fragmentShader from './shaders/base/fragment.glsl'
-import { step } from 'three/tsl'
+
+const textureLoader = new THREE.TextureLoader()
+const map = textureLoader.load('/textures/01.jpg')
 
 /**
  * Debug
@@ -20,8 +22,21 @@ const config = {
 		amplitude: 0.7,
 	},
 	octaves: 5,
+	curl: {
+		steps: 0,
+	},
 }
 const pane = new Pane()
+
+pane
+	.addBinding(config.curl, 'steps', {
+		min: 1,
+		max: 40,
+		step: 1,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uCurlSteps.value = ev.value
+	})
 
 pane
 	.addBinding(config, 'octaves', {
@@ -82,6 +97,12 @@ const material = new THREE.ShaderMaterial({
 		uOctaves: {
 			value: config.octaves,
 		},
+		uMap: {
+			value: map,
+		},
+		uCurlSteps: {
+			value: config.curl.steps,
+		},
 	},
 })
 const boxGeometry = new THREE.BoxGeometry(3.3, 3.3, 3.3)
@@ -99,7 +120,7 @@ const planeGeometry = new THREE.PlaneGeometry(5, 5, 50, 50)
 const plane = new THREE.Mesh(planeGeometry, material)
 // plane.position.y = -2
 
-scene.add(torus)
+scene.add(box)
 
 // background della scena
 scene.background = new THREE.Color(0x000033)
