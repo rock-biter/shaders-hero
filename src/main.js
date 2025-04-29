@@ -10,12 +10,19 @@ import vertexShader from './shaders/base/vertex.glsl'
 import fragmentShader from './shaders/base/fragment.glsl'
 
 const textureLoader = new THREE.TextureLoader()
-const map = textureLoader.load('/textures/voronoi.png')
 const mapPerlin = textureLoader.load('/textures/perlin.png')
-map.wrapS = THREE.RepeatWrapping
-map.wrapT = THREE.RepeatWrapping
 mapPerlin.wrapS = THREE.RepeatWrapping
 mapPerlin.wrapT = THREE.RepeatWrapping
+
+const cubeTextureLoader = new THREE.CubeTextureLoader()
+const envMap = cubeTextureLoader.load([
+	'/env/02/px.png',
+	'/env/02/nx.png',
+	'/env/02/py.png',
+	'/env/02/ny.png',
+	'/env/02/pz.png',
+	'/env/02/nz.png',
+])
 
 /**
  * Debug
@@ -23,35 +30,11 @@ mapPerlin.wrapT = THREE.RepeatWrapping
 // __gui__
 const config = {
 	perlin: {
-		frequency: 1,
-		amplitude: 0.7,
-	},
-	octaves: 5,
-	curl: {
-		steps: 0,
+		frequency: 0.3,
+		amplitude: 1.2,
 	},
 }
 const pane = new Pane()
-
-pane
-	.addBinding(config.curl, 'steps', {
-		min: 1,
-		max: 40,
-		step: 1,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uCurlSteps.value = ev.value
-	})
-
-pane
-	.addBinding(config, 'octaves', {
-		min: 1,
-		max: 10,
-		step: 1,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uOctaves.value = ev.value
-	})
 
 const perlin = pane.addFolder({ title: 'Perlin' })
 perlin
@@ -62,6 +45,7 @@ perlin
 	})
 	.on('change', (ev) => {
 		material.uniforms.uFrequency.value = ev.value
+		innerBlob.material.uniforms.uFrequency.value = ev.value
 	})
 
 perlin
@@ -72,6 +56,7 @@ perlin
 	})
 	.on('change', (ev) => {
 		material.uniforms.uAmplitude.value = ev.value
+		innerBlob.material.uniforms.uAmplitude.value = ev.value
 	})
 
 /**
@@ -89,6 +74,8 @@ const material = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
 	// wireframe: true,
+	// side: THREE.DoubleSide,
+	transparent: true,
 	uniforms: {
 		uTime: {
 			value: 0,
@@ -102,36 +89,48 @@ const material = new THREE.ShaderMaterial({
 		uOctaves: {
 			value: config.octaves,
 		},
-		uMap: {
-			value: map,
-		},
 		uPerlin: {
 			value: mapPerlin,
 		},
-		uCurlSteps: {
-			value: config.curl.steps,
+		uEnvMap: {
+			value: envMap,
+		},
+		uInnerFace: {
+			value: false,
 		},
 	},
 })
 const boxGeometry = new THREE.BoxGeometry(3.3, 3.3, 3.3)
 const icoGeometry = new THREE.IcosahedronGeometry(3)
 const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
+const sphereGeometry = new THREE.SphereGeometry(2.5, 100, 100)
 const box = new THREE.Mesh(boxGeometry, material)
 const ico = new THREE.Mesh(icoGeometry, material)
 const torus = new THREE.Mesh(torusGeometry, material)
+const sphere = new THREE.Mesh(sphereGeometry, material)
+sphereGeometry.computeTangents()
 // torus.position.x = 3
 // box.position.x = -3
-torus.rotation.x = -Math.PI * 0.2
-torus.scale.setScalar(3)
+// torus.rotation.x = -Math.PI * 0.2
+// torus.scale.setScalar(3)
 const planeGeometry = new THREE.PlaneGeometry(5, 5, 50, 50)
 // planeGeometry.rotateX(-Math.PI / 2)
 const plane = new THREE.Mesh(planeGeometry, material)
 // plane.position.y = -2
 
-scene.add(box)
+const innerBlob = sphere.clone(true)
+innerBlob.material = material.clone()
+innerBlob.material.side = THREE.BackSide
+innerBlob.material.blending = THREE.AdditiveBlending
+innerBlob.material.depthTest = false
+innerBlob.material.depthWrite = false
+innerBlob.material.uniforms.uInnerFace.value = true
+scene.add(sphere, innerBlob)
+innerBlob.renderOrder = 2
 
 // background della scena
-scene.background = new THREE.Color(0x000033)
+// scene.background = new THREE.Color(0x000033)
+scene.background = envMap
 
 /**
  * render sizes
@@ -146,7 +145,8 @@ const sizes = {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(3, 2, 6)
+camera.position.set(5, -3.5, -7.5)
+// camera.position.set(0.0, 0.0, 8.0)
 camera.lookAt(new THREE.Vector3(2, 2.5, 0))
 
 /**
@@ -196,6 +196,7 @@ function tic() {
 	 */
 	// const time = clock.getElapsedTime()
 	material.uniforms.uTime.value = time
+	innerBlob.material.uniforms.uTime.value = time
 
 	ico.rotation.x += 0.01
 

@@ -4,16 +4,15 @@
 #include ../perlin.glsl;
 #include ../fbm.glsl;
 #include ../cellular.glsl;
-// #include ../lights.glsl;
+#include ../lights.glsl;
 #include ../curl.glsl;
 
 uniform float uTime;
 uniform float uFrequency;
 uniform float uAmplitude;
-uniform int uOctaves;
-uniform int uCurlSteps;
-uniform sampler2D uMap;
 uniform sampler2D uPerlin;
+uniform samplerCube uEnvMap;
+uniform bool uInnerFace;
 
 varying vec2 vUv;
 varying vec3 vNormal;
@@ -21,27 +20,75 @@ varying vec3 vWorldPosition;
 
 void main() {
 
+  vec3 light = vec3(0.0);
   vec2 uv = vUv;
   vec3 pos = vWorldPosition;
+  vec3 normal = normalize(vNormal);
+  vec3 viewDir = normalize(pos - cameraPosition);
 
-  vec2 offest = vec2(
-    texture(uPerlin, vec2(uv.y + uTime * 0.2, 0.5) * .3).r,
-    texture(uPerlin, vec2(uv.x + uTime * 0.2, 0.5) * .3).r
-  );
-  offest *= 0.08;
-  float v = 1. - texture(uMap, uv * uFrequency + offest + uTime * 0.1).b;
+  if(uInnerFace == true) {
+    normal = -normal;
+  }
 
-  // v +=  texture(uMap, uv * uFrequency * 2. + 10.).r * 0.5;
-  // v +=  texture(uMap, uv * uFrequency * 4. + 20.).r * 0.25;
-  v = pow(v, 4.);
+  float inverseFresnel = max(dot(-viewDir, normal), 0.0);
+  float fresnel = 1. - inverseFresnel;
 
+  vec3 envCorrection = vec3(-1.0,1.0,1.0);
+  vec3 reflecDir = normalize(reflect(viewDir, normal));
+
+  vec3 refracDirR = normalize(refract(viewDir, normal, 1.0 / 1.07));
+  // vec3 refracDir = normalize(refract(viewDir, normal, 1.0 / 1.05));
+  // refracDir = normalize(refract(refracDir, normal, 1.0 / 1.05));
+  vec3 refracDirG = normalize(refract(viewDir, normal, 1.0 / (1.07 + 0.025 * pow(fresnel,2.0))));
+  vec3 refracDirB = normalize(refract(viewDir, normal, 1.0 / (1.07 + 0.035 * pow(fresnel,2.0))));
+  
+  float refracR = textureCube(uEnvMap, refracDirR* envCorrection).r;
+  float refracG = textureCube(uEnvMap, refracDirG* envCorrection).g;
+  float refracB = textureCube(uEnvMap, refracDirB* envCorrection).b;
+  // vec3 refrac = textureCube(uEnvMap, refracDir * envCorrection).rgb;
+  vec3 refracColor = vec3(refracR, refracG, refracB);
+  vec3 reflecColor = textureCube(uEnvMap, reflecDir* envCorrection).rgb;
+
+  fresnel = pow(fresnel, 1.0);
+  inverseFresnel = pow(inverseFresnel, 1.);
+  
   // v /= 1.75;
 
-  vec3 baseColor = vec3(v);
+  // dirLight
+  vec3 lightDir = normalize(vec3(-1, 3., 1));
+  vec3 lightColor = vec3(1.0);
+  light += hemiLight( vec3(0.),vec3(0.0,0.1,0.3), 0.3, normal);
+  float phongLight = smoothstep(0.2,0.8,phongSpecular(viewDir, lightDir, normal, 5.));
+  if(uInnerFace == true) {
+    phongLight *= 0.15;
+  } else {
+    phongLight *= 0.8;
+  }
+  light += phongLight;
+  // if(uInnerFace == false) {
+    // light += phongSpecular(viewDir, lightDir, normal, 10.) * 0.7;
+  // }
+  // light += dirLight(lightColor, 1.0, lightDir, normal, viewDir, 20.0);
+  light += reflecColor * fresnel * 0.7;
+  if(uInnerFace == false) {
+    light += refracColor * inverseFresnel * 2.;
+  }
+
+  vec3 baseColor = vec3( 0.85,0.89,1.0 ) * 0.8;
+  // vec3 baseColor = vec3(1.0);
+  baseColor *= light;
 
   vec3 color = baseColor;
-  gl_FragColor = vec4(color,1.0);
+  if(uInnerFace == true) {
+    color *= 0.35;
+    color *= pow(inverseFresnel,2.5);
+  } else {
+    color *= 0.9;
+    color *= 1. + random(pos + 100.) * (0.15 + 0.25 * fresnel);
+  }
+  gl_FragColor = vec4(color,1.);
+  // gl_FragColor *= 0.5;
 
-  // #include <tonemapping_fragment>
-  // #include <colorspace_fragment>
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
 }
