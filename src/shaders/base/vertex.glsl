@@ -13,6 +13,7 @@ uniform sampler2D uPerlin;
 
 varying vec2 vUv;
 varying vec3 vNormal;
+varying vec3 vNormalOut;
 varying vec3 vWorldPosition;
 
 void main() {
@@ -38,7 +39,6 @@ void main() {
   wPosBT.xyz += normal * vbt * uAmplitude;
 
   vNormal = normalize(cross(normalize(wPosT.xyz - wPos.xyz), normalize(wPosBT.xyz - wPos.xyz)));
-  // wPos.y += v * uAmplitude;
 
   // wPos.z += cnoise(wPos.xy * uFrequency + uTime) * uAmplitude;
   vWorldPosition = wPos.xyz;

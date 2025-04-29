@@ -16,9 +16,20 @@ uniform bool uInnerFace;
 
 varying vec2 vUv;
 varying vec3 vNormal;
+varying vec3 vNormalOut;
 varying vec3 vWorldPosition;
 
+vec3 reflectRefractDir(vec3 refractDir, vec3 rightDir, vec3 upDir) {
+  refractDir = reflect(refractDir, rightDir);
+  refractDir = reflect(refractDir, upDir);
+  refractDir = normalize(refractDir);
+  return refractDir;
+}
+
 void main() {
+
+  vec3 cameraX = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
+  vec3 cameraY = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
 
   vec3 light = vec3(0.0);
   vec2 uv = vUv;
@@ -36,17 +47,17 @@ void main() {
   vec3 envCorrection = vec3(-1.0,1.0,1.0);
   vec3 reflecDir = normalize(reflect(viewDir, normal));
 
-  vec3 refracDirR = normalize(refract(viewDir, normal, 1.0 / 1.07));
-  // vec3 refracDir = normalize(refract(viewDir, normal, 1.0 / 1.05));
-  // refracDir = normalize(refract(refracDir, normal, 1.0 / 1.05));
-  vec3 refracDirG = normalize(refract(viewDir, normal, 1.0 / (1.07 + 0.025 * pow(fresnel,2.0))));
-  vec3 refracDirB = normalize(refract(viewDir, normal, 1.0 / (1.07 + 0.035 * pow(fresnel,2.0))));
+  vec3 refracDirR = reflectRefractDir(normalize(refract(viewDir, normal, 1.0 / 1.07)), cameraX, cameraY);
+  // vec3 refracDir = reflectRefractDir(normalize(refract(viewDir, normal, 1.0 / 1.07)), cameraX, cameraY);
+  vec3 refracDirG = reflectRefractDir(normalize(refract(viewDir, normal, 1.0 / (1.07 + 0.025 * pow(fresnel,2.0)))), cameraX, cameraY);
+  vec3 refracDirB = reflectRefractDir(normalize(refract(viewDir, normal, 1.0 / (1.07 + 0.035 * pow(fresnel,2.0)))), cameraX, cameraY);
   
   float refracR = textureCube(uEnvMap, refracDirR * envCorrection).r;
   float refracG = textureCube(uEnvMap, refracDirG * envCorrection).g;
   float refracB = textureCube(uEnvMap, refracDirB * envCorrection).b;
   // vec3 refrac = textureCube(uEnvMap, refracDir * envCorrection).rgb;
   vec3 refracColor = vec3(refracR, refracG, refracB);
+  // refracColor = refrac;
   vec3 reflecColor = textureCube(uEnvMap, reflecDir* envCorrection).rgb;
 
   fresnel = pow(fresnel, 1.0);
