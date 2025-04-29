@@ -42,9 +42,9 @@ void main() {
   vec3 refracDirG = normalize(refract(viewDir, normal, 1.0 / (1.07 + 0.025 * pow(fresnel,2.0))));
   vec3 refracDirB = normalize(refract(viewDir, normal, 1.0 / (1.07 + 0.035 * pow(fresnel,2.0))));
   
-  float refracR = textureCube(uEnvMap, refracDirR* envCorrection).r;
-  float refracG = textureCube(uEnvMap, refracDirG* envCorrection).g;
-  float refracB = textureCube(uEnvMap, refracDirB* envCorrection).b;
+  float refracR = textureCube(uEnvMap, refracDirR * envCorrection).r;
+  float refracG = textureCube(uEnvMap, refracDirG * envCorrection).g;
+  float refracB = textureCube(uEnvMap, refracDirB * envCorrection).b;
   // vec3 refrac = textureCube(uEnvMap, refracDir * envCorrection).rgb;
   vec3 refracColor = vec3(refracR, refracG, refracB);
   vec3 reflecColor = textureCube(uEnvMap, reflecDir* envCorrection).rgb;
@@ -88,6 +88,32 @@ void main() {
   }
   gl_FragColor = vec4(color,1.);
   // gl_FragColor *= 0.5;
+
+  // grid bubble
+  if(uInnerFace == false) {
+    vec2 cellUv = vUv;
+    cellUv = cellUv * 70. + vec2(0., -uTime * 10. );
+    vec2 baseUV = floor(cellUv);
+    cellUv = fract(cellUv) - 0.5;
+    cellUv *= vec2(4.0,2.0);
+    vec2 offset = vec2(0.);
+    offset.x += sin(baseUV.y * 10. + uTime * 10.) * 0.4;
+    offset.y += cos(baseUV.x * 10. + uTime) * 0.3;
+    // offset *= remap(normal.y, -1., 1.0, 0.) 
+    float shapeRadius = cnoise(vec3(baseUV * 10., 0.3));
+    shapeRadius *= 0.6;
+    float shape = 1.0 - smoothstep(shapeRadius - 0.2, shapeRadius, length(cellUv + offset) );
+    // shape *= smoothstep(0.,shapeRadius, length(cellUv + offset) );
+    float shapeAttenuation = 1. - abs(normal.y);
+    shapeAttenuation = smoothstep(0.2, 0.3, shapeAttenuation);
+    shapeAttenuation = pow(shapeAttenuation, 3.0);
+    shape *= shapeAttenuation;
+
+    // color = vec3(shape);
+    // color *= 1. + shape * 0.2;
+    gl_FragColor.rgb *= 1. + shape ;
+    // gl_FragColor.rgb = vec3(shape);
+  }
 
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
