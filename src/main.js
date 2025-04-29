@@ -15,14 +15,20 @@ mapPerlin.wrapS = THREE.RepeatWrapping
 mapPerlin.wrapT = THREE.RepeatWrapping
 
 const cubeTextureLoader = new THREE.CubeTextureLoader()
-const envMap = cubeTextureLoader.load([
-	'/env/02/px.png',
-	'/env/02/nx.png',
-	'/env/02/py.png',
-	'/env/02/ny.png',
-	'/env/02/pz.png',
-	'/env/02/nz.png',
-])
+const envMap = cubeTextureLoader.load(
+	[
+		'/env/02/px.png',
+		'/env/02/nx.png',
+		'/env/02/py.png',
+		'/env/02/ny.png',
+		'/env/02/pz.png',
+		'/env/02/nz.png',
+	],
+	() => {
+		scene.add(sphere, innerBlob)
+		scene.background = envMap
+	}
+)
 
 /**
  * Debug
@@ -125,12 +131,12 @@ innerBlob.material.blending = THREE.AdditiveBlending
 innerBlob.material.depthTest = false
 innerBlob.material.depthWrite = false
 innerBlob.material.uniforms.uInnerFace.value = true
-scene.add(sphere, innerBlob)
+// scene.add(sphere, innerBlob)
 innerBlob.renderOrder = 2
 
 // background della scena
 // scene.background = new THREE.Color(0x000033)
-scene.background = envMap
+// scene.background = envMap
 
 /**
  * render sizes
