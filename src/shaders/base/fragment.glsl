@@ -114,6 +114,7 @@ void main() {
     gl_FragColor.rgb *= 1. + shape ;
     // gl_FragColor.rgb = vec3(shape);
   }
+  
 
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
