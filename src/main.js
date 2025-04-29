@@ -10,7 +10,12 @@ import vertexShader from './shaders/base/vertex.glsl'
 import fragmentShader from './shaders/base/fragment.glsl'
 
 const textureLoader = new THREE.TextureLoader()
-const map = textureLoader.load('/textures/01.jpg')
+const map = textureLoader.load('/textures/voronoi.png')
+const mapPerlin = textureLoader.load('/textures/perlin.png')
+map.wrapS = THREE.RepeatWrapping
+map.wrapT = THREE.RepeatWrapping
+mapPerlin.wrapS = THREE.RepeatWrapping
+mapPerlin.wrapT = THREE.RepeatWrapping
 
 /**
  * Debug
@@ -99,6 +104,9 @@ const material = new THREE.ShaderMaterial({
 		},
 		uMap: {
 			value: map,
+		},
+		uPerlin: {
+			value: mapPerlin,
 		},
 		uCurlSteps: {
 			value: config.curl.steps,

@@ -13,6 +13,7 @@ uniform float uAmplitude;
 uniform int uOctaves;
 uniform int uCurlSteps;
 uniform sampler2D uMap;
+uniform sampler2D uPerlin;
 
 varying vec2 vUv;
 varying vec3 vNormal;
@@ -21,19 +22,22 @@ varying vec3 vWorldPosition;
 void main() {
 
   vec2 uv = vUv;
+  vec3 pos = vWorldPosition;
 
-  for(int i = 0; i < uCurlSteps; i++) {
-    vec2 curl = curlNoise(uv * uFrequency * 10.);
-    uv += curl * 0.015;
-  }
-  // float perlin = cnoise(uv * uFrequency * 10.) * 0.5 + 0.5;
-  vec2 uvMap = uv;
+  vec2 offest = vec2(
+    texture(uPerlin, vec2(uv.y + uTime * 0.2, 0.5) * .3).r,
+    texture(uPerlin, vec2(uv.x + uTime * 0.2, 0.5) * .3).r
+  );
+  offest *= 0.08;
+  float v = 1. - texture(uMap, uv * uFrequency + offest + uTime * 0.1).b;
 
-  vec3 baseColor = texture(uMap, uvMap).rgb;
+  // v +=  texture(uMap, uv * uFrequency * 2. + 10.).r * 0.5;
+  // v +=  texture(uMap, uv * uFrequency * 4. + 20.).r * 0.25;
+  v = pow(v, 4.);
 
-  // if(uv.x > 0.5) {
-  //   baseColor = vec3(curl,0.0);
-  // }
+  // v /= 1.75;
+
+  vec3 baseColor = vec3(v);
 
   vec3 color = baseColor;
   gl_FragColor = vec4(color,1.0);
