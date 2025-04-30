@@ -26,32 +26,8 @@ const config = {
 		frequency: 1,
 		amplitude: 0.7,
 	},
-	octaves: 5,
-	curl: {
-		steps: 0,
-	},
 }
 const pane = new Pane()
-
-pane
-	.addBinding(config.curl, 'steps', {
-		min: 1,
-		max: 40,
-		step: 1,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uCurlSteps.value = ev.value
-	})
-
-pane
-	.addBinding(config, 'octaves', {
-		min: 1,
-		max: 10,
-		step: 1,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uOctaves.value = ev.value
-	})
 
 const perlin = pane.addFolder({ title: 'Perlin' })
 perlin
@@ -98,18 +74,6 @@ const material = new THREE.ShaderMaterial({
 		},
 		uAmplitude: {
 			value: config.perlin.amplitude,
-		},
-		uOctaves: {
-			value: config.octaves,
-		},
-		uMap: {
-			value: map,
-		},
-		uPerlin: {
-			value: mapPerlin,
-		},
-		uCurlSteps: {
-			value: config.curl.steps,
 		},
 	},
 })
