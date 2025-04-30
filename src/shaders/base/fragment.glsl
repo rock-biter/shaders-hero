@@ -2,18 +2,14 @@
 #include ../random.glsl;
 #include ../noise.glsl;
 #include ../perlin.glsl;
-#include ../fbm.glsl;
-#include ../cellular.glsl;
-// #include ../lights.glsl;
-#include ../curl.glsl;
+// #include ../fbm.glsl;
+// #include ../cellular.glsl;
+#include ../lights.glsl;
+// #include ../curl.glsl;
 
 uniform float uTime;
 uniform float uFrequency;
 uniform float uAmplitude;
-uniform int uOctaves;
-uniform int uCurlSteps;
-uniform sampler2D uMap;
-uniform sampler2D uPerlin;
 
 varying vec2 vUv;
 varying vec3 vNormal;
