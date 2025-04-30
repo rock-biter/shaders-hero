@@ -9,13 +9,21 @@ import { Pane } from 'tweakpane'
 import vertexShader from './shaders/base/vertex.glsl'
 import fragmentShader from './shaders/base/fragment.glsl'
 
-const textureLoader = new THREE.TextureLoader()
-const map = textureLoader.load('/textures/voronoi.png')
-const mapPerlin = textureLoader.load('/textures/perlin.png')
-map.wrapS = THREE.RepeatWrapping
-map.wrapT = THREE.RepeatWrapping
-mapPerlin.wrapS = THREE.RepeatWrapping
-mapPerlin.wrapT = THREE.RepeatWrapping
+const cubeTextureLoader = new THREE.CubeTextureLoader()
+const envMap = cubeTextureLoader.load(
+	[
+		'/env/02/px.png',
+		'/env/02/nx.png',
+		'/env/02/py.png',
+		'/env/02/ny.png',
+		'/env/02/pz.png',
+		'/env/02/nz.png',
+	],
+	() => {
+		scene.background = envMap
+		scene.add(drop, innerDrop)
+	}
+)
 
 /**
  * Debug
@@ -23,8 +31,8 @@ mapPerlin.wrapT = THREE.RepeatWrapping
 // __gui__
 const config = {
 	perlin: {
-		frequency: 1,
-		amplitude: 0.7,
+		frequency: 0.3,
+		amplitude: 0.8,
 	},
 }
 const pane = new Pane()
@@ -75,27 +83,42 @@ const material = new THREE.ShaderMaterial({
 		uAmplitude: {
 			value: config.perlin.amplitude,
 		},
+		uEnvMap: {
+			value: envMap,
+		},
+		uInnerFace: {
+			value: false,
+		},
 	},
 })
-const boxGeometry = new THREE.BoxGeometry(3.3, 3.3, 3.3)
-const icoGeometry = new THREE.IcosahedronGeometry(3)
-const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
-const box = new THREE.Mesh(boxGeometry, material)
-const ico = new THREE.Mesh(icoGeometry, material)
-const torus = new THREE.Mesh(torusGeometry, material)
-// torus.position.x = 3
-// box.position.x = -3
-torus.rotation.x = -Math.PI * 0.2
-torus.scale.setScalar(3)
-const planeGeometry = new THREE.PlaneGeometry(5, 5, 50, 50)
-// planeGeometry.rotateX(-Math.PI / 2)
-const plane = new THREE.Mesh(planeGeometry, material)
+// const boxGeometry = new THREE.BoxGeometry(3.3, 3.3, 3.3)
+// const icoGeometry = new THREE.IcosahedronGeometry(3)
+// const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
+// const box = new THREE.Mesh(boxGeometry, material)
+// const ico = new THREE.Mesh(icoGeometry, material)
+// const torus = new THREE.Mesh(torusGeometry, material)
+// // torus.position.x = 3
+// // box.position.x = -3
+// torus.rotation.x = -Math.PI * 0.2
+// torus.scale.setScalar(3)
+// const planeGeometry = new THREE.PlaneGeometry(5, 5, 50, 50)
+// // planeGeometry.rotateX(-Math.PI / 2)
+// const plane = new THREE.Mesh(planeGeometry, material)
 // plane.position.y = -2
-
-scene.add(box)
+const sphereGeometry = new THREE.SphereGeometry(2.5, 100, 100)
+sphereGeometry.computeTangents()
+console.log(sphereGeometry)
+const drop = new THREE.Mesh(sphereGeometry, material)
+const innerDrop = drop.clone()
+innerDrop.material = drop.material.clone()
+innerDrop.material.uniforms.uTime = material.uniforms.uTime
+innerDrop.material.side = THREE.BackSide
+innerDrop.material.blending = THREE.AdditiveBlending
+innerDrop.material.depthTest = false
+innerDrop.material.uniforms.uInnerFace.value = true
 
 // background della scena
-scene.background = new THREE.Color(0x000033)
+// scene.background = new THREE.Color(0x000033)
 
 /**
  * render sizes
@@ -110,7 +133,7 @@ const sizes = {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(3, 2, 6)
+camera.position.set(5, -3.5, -7.5)
 camera.lookAt(new THREE.Vector3(2, 2.5, 0))
 
 /**
@@ -160,8 +183,6 @@ function tic() {
 	 */
 	// const time = clock.getElapsedTime()
 	material.uniforms.uTime.value = time
-
-	ico.rotation.x += 0.01
 
 	// __controls_update__
 	controls.update()
