@@ -49,6 +49,21 @@ float fbm(vec3 x, int octaves) {
 	return v;
 }
 
+float fbm(vec4 x, int octaves) {
+	float v = 0.0;
+	float a = 1.;
+  float normalization = 0.;
+	vec4 shift = vec4(100);
+	for (int i = 0; i < octaves; ++i) {
+    normalization += a;
+		v += a * cnoise(x);
+		x = x * 2.0 + shift;
+		a *= 0.5;
+	}
+  v /= normalization;
+	return v;
+}
+
 // Turbulence
 float turbulenceFBM(vec3 x, int octaves) {
 	float v = 0.0;

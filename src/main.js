@@ -13,6 +13,10 @@ import vertexSquare from './shaders/square/vertex.glsl'
 import fragmentSquare from './shaders/square/fragment.glsl'
 import vertexBG from './shaders/background/vertex.glsl'
 import fragmentBG from './shaders/background/fragment.glsl'
+
+import windVertex from './shaders/wind/vertex.glsl'
+import windFrag from './shaders/wind/fragment.glsl'
+
 import gsap from 'gsap'
 import { BufferGeometryUtils } from 'three/examples/jsm/Addons.js'
 
@@ -66,6 +70,7 @@ pane
 	.on('change', (ev) => {
 		material.uniforms.uProgress.value = ev.value
 		mat.uniforms.uProgress.value = ev.value
+		windMat.uniforms.uProgress.value = ev.value
 	})
 
 const perlin = pane.addFolder({ title: 'Perlin' })
@@ -236,7 +241,7 @@ for (let y = 0; y < 2; y++) {
 			pos.multiplyScalar(size)
 			g.translate(...pos)
 			const step = Math.floor((Math.random() * Math.PI) / (Math.PI * 0.5))
-			console.log('step', step)
+			// console.log('step', step)
 			g.rotateY(step * Math.PI * 0.5)
 			g.translate(size * step * 0.5, 0, size * step * 0.5)
 
@@ -263,10 +268,35 @@ const mat = new THREE.ShaderMaterial({
 const panleGeometry = BufferGeometryUtils.mergeGeometries(geometries)
 
 const panel = new THREE.Mesh(panleGeometry, mat)
+panel.renderOrder = 2
 scene.add(panel)
 
 panel.position.set(0, 1, 0)
 scene.add(panel)
+
+// wind
+const windGeom = new THREE.PlaneGeometry(8, 8, 50, 50)
+windGeom.rotateX(-Math.PI * 0.5)
+const windMat = new THREE.ShaderMaterial({
+	vertexShader: windVertex,
+	fragmentShader: windFrag,
+	transparent: true,
+	depthTest: false,
+	depthWrite: false,
+	// wireframe: true,
+	uniforms: {
+		uTime: {
+			value: 0,
+		},
+		uProgress: {
+			value: config.progress,
+		},
+	},
+})
+
+const wind = new THREE.Mesh(windGeom, windMat)
+wind.position.y = 0.4
+scene.add(wind)
 
 /**
  * Show the axes of coordinates system
@@ -346,6 +376,7 @@ function tic() {
 	// const time = clock.getElapsedTime()
 	material.uniforms.uTime.value = time
 	mat.uniforms.uTime.value = time
+	windMat.uniforms.uTime.value = time
 
 	ico.rotation.x += 0.01
 
