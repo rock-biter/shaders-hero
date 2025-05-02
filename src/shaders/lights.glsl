@@ -103,7 +103,7 @@ vec3 dirLight(vec3 lightColor, float intensity, vec3 lightDirection, vec3 normal
     diffuse = toonify(normal, dir, 0.05, float(TOON));
   #endif
 
-  vec3 light = (diffuse + specular) * intensity * lightColor;
+  vec3 light = (diffuse ) * intensity * lightColor;
   
   return light;
 }

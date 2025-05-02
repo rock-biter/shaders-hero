@@ -5,25 +5,39 @@
 #include ../fbm.glsl;
 
 uniform float uTime;
-uniform float uFrequency;
-uniform float uAmplitude;
-uniform int uOctaves;
+uniform float uTerrainFrequency;
+uniform float uTerrainAmplitude;
+uniform float uProgress;
+uniform sampler2D uTriangles;
+uniform sampler2D uPerlin;
+uniform sampler2D uFBM;
 
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vWorldPosition;
 
+float elevation(vec3 pos, float f, float a) {
+  float elevation = texture(uFBM, pos.xz * f).r * a;
+  float elAttenuation = 0.1 + linearstep(0.0, 30., length(pos.xz)) * 0.9;
+  return elevation * elAttenuation;
+}
+
 void main() {
   vUv = uv;
-  vNormal = (modelMatrix * vec4(normal, 0.0)).xyz;
-  vec4 wPos = modelMatrix * vec4(position,1.0);
-  // vec3 p = wPos.xyz * uFrequency;
+  
+  vec3 pos = position;
+  vec3 posX = position + vec3(0.5, 0.0, 0.0);
+  vec3 posZ = position + vec3(0.0, 0.0, 0.5);
 
-  // float v = ridgedFBM(p,uOctaves);
-  // wPos.y += v * uAmplitude;
+  pos.y += elevation(pos, uTerrainFrequency, uTerrainAmplitude);
+  posX.y += elevation(posX, uTerrainFrequency, uTerrainAmplitude);
+  posZ.y += elevation(posZ, uTerrainFrequency, uTerrainAmplitude);
 
-  // wPos.z += cnoise(wPos.xy * uFrequency + uTime) * uAmplitude;
+  vec4 wPos = modelMatrix * vec4(pos,1.0);
   vWorldPosition = wPos.xyz;
+
+  vec3 n = normalize(cross(posZ - pos, posX - pos));
+  vNormal = (modelMatrix * vec4(n,0.0)).xyz;
 
   gl_Position = projectionMatrix * viewMatrix * wPos;
 }

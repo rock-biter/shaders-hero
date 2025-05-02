@@ -5,17 +5,30 @@ import * as THREE from 'three'
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { Pane } from 'tweakpane'
+import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js'
 
 import vertexShader from './shaders/base/vertex.glsl'
 import fragmentShader from './shaders/base/fragment.glsl'
+import vertexSquare from './shaders/square/vertex.glsl'
+import fragmentSquare from './shaders/square/fragment.glsl'
+import vertexBG from './shaders/background/vertex.glsl'
+import fragmentBG from './shaders/background/fragment.glsl'
+import gsap from 'gsap'
+import { BufferGeometryUtils } from 'three/examples/jsm/Addons.js'
 
 const textureLoader = new THREE.TextureLoader()
-const map = textureLoader.load('/textures/voronoi.png')
+const triangles = textureLoader.load('/textures/triangles.png')
+const tiles = textureLoader.load('/textures/tiles.png')
 const mapPerlin = textureLoader.load('/textures/perlin.png')
-map.wrapS = THREE.RepeatWrapping
-map.wrapT = THREE.RepeatWrapping
+const mapFBM = textureLoader.load('/textures/fbm.png')
+triangles.wrapS = THREE.RepeatWrapping
+triangles.wrapT = THREE.RepeatWrapping
 mapPerlin.wrapS = THREE.RepeatWrapping
 mapPerlin.wrapT = THREE.RepeatWrapping
+mapFBM.wrapS = THREE.RepeatWrapping
+mapFBM.wrapT = THREE.RepeatWrapping
+tiles.wrapS = THREE.RepeatWrapping
+tiles.wrapT = THREE.RepeatWrapping
 
 /**
  * Debug
@@ -23,41 +36,44 @@ mapPerlin.wrapT = THREE.RepeatWrapping
 // __gui__
 const config = {
 	perlin: {
-		frequency: 1,
-		amplitude: 0.7,
+		frequency: 0.35,
+		amplitude: 3,
 	},
-	octaves: 5,
-	curl: {
-		steps: 0,
+	terrain: {
+		frequency: 0.015,
+		amplitude: 6.0,
+	},
+	progress: 0.3,
+	alphaFalloff: {
+		start: 0.0,
+		end: 30,
+		margin: 0.05,
+	},
+	terrainFalloff: {
+		start: 0.0,
+		end: 30,
+		margin: 0.05,
 	},
 }
 const pane = new Pane()
 
 pane
-	.addBinding(config.curl, 'steps', {
-		min: 1,
-		max: 40,
-		step: 1,
+	.addBinding(config, 'progress', {
+		min: 0,
+		max: 1,
+		step: 0.001,
 	})
 	.on('change', (ev) => {
-		material.uniforms.uCurlSteps.value = ev.value
-	})
-
-pane
-	.addBinding(config, 'octaves', {
-		min: 1,
-		max: 10,
-		step: 1,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uOctaves.value = ev.value
+		material.uniforms.uProgress.value = ev.value
+		mat.uniforms.uProgress.value = ev.value
 	})
 
 const perlin = pane.addFolder({ title: 'Perlin' })
+
 perlin
 	.addBinding(config.perlin, 'frequency', {
 		min: 0.01,
-		max: 4,
+		max: 2,
 		step: 0.01,
 	})
 	.on('change', (ev) => {
@@ -66,14 +82,34 @@ perlin
 
 perlin
 	.addBinding(config.perlin, 'amplitude', {
-		min: 0.1,
-		max: 2,
+		min: 0.01,
+		max: 10,
 		step: 0.01,
 	})
 	.on('change', (ev) => {
 		material.uniforms.uAmplitude.value = ev.value
 	})
 
+const terrain = pane.addFolder({ title: 'Terrain' })
+terrain
+	.addBinding(config.terrain, 'frequency', {
+		min: 0.001,
+		max: 0.1,
+		step: 0.001,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uTerrainFrequency.value = ev.value
+	})
+
+terrain
+	.addBinding(config.terrain, 'amplitude', {
+		min: 0.1,
+		max: 10,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uTerrainAmplitude.value = ev.value
+	})
 /**
  * Scene
  */
@@ -88,6 +124,7 @@ const scene = new THREE.Scene()
 const material = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
+	transparent: true,
 	// wireframe: true,
 	uniforms: {
 		uTime: {
@@ -99,18 +136,22 @@ const material = new THREE.ShaderMaterial({
 		uAmplitude: {
 			value: config.perlin.amplitude,
 		},
+		uTerrainFrequency: {
+			value: config.terrain.frequency,
+		},
+		uTerrainAmplitude: {
+			value: config.terrain.amplitude,
+		},
 		uOctaves: {
 			value: config.octaves,
 		},
-		uMap: {
-			value: map,
+		uProgress: {
+			value: config.progress,
 		},
-		uPerlin: {
-			value: mapPerlin,
-		},
-		uCurlSteps: {
-			value: config.curl.steps,
-		},
+		uTriangles: new THREE.Uniform(triangles),
+		uFBM: new THREE.Uniform(mapFBM),
+		uPerlin: new THREE.Uniform(mapPerlin),
+		uTiles: new THREE.Uniform(tiles),
 	},
 })
 const boxGeometry = new THREE.BoxGeometry(3.3, 3.3, 3.3)
@@ -123,15 +164,19 @@ const torus = new THREE.Mesh(torusGeometry, material)
 // box.position.x = -3
 torus.rotation.x = -Math.PI * 0.2
 torus.scale.setScalar(3)
-const planeGeometry = new THREE.PlaneGeometry(5, 5, 50, 50)
-// planeGeometry.rotateX(-Math.PI / 2)
+const planeGeometry = new THREE.PlaneGeometry(15, 15, 200, 200)
+planeGeometry.rotateX(-Math.PI / 2)
 const plane = new THREE.Mesh(planeGeometry, material)
 // plane.position.y = -2
 
-scene.add(box)
+scene.add(plane)
 
 // background della scena
-scene.background = new THREE.Color(0x000033)
+// scene.background = new THREE.Color(0.36, 0.38, 0.44)
+
+// pane.addBinding(scene, 'background', {
+// 	color: { type: 'float' },
+// })
 
 /**
  * render sizes
@@ -146,8 +191,82 @@ const sizes = {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(3, 2, 6)
+camera.position.set(2, 3, 2)
 camera.lookAt(new THREE.Vector3(2, 2.5, 0))
+
+// backgorund
+const geom = new THREE.BufferGeometry()
+const position = new THREE.BufferAttribute(
+	new Float32Array([-1.0, -1.0, 0, 3.0, -1.0, 0.0, -1.0, 3.0, 0.0]),
+	3
+)
+const uv = new THREE.BufferAttribute(
+	new Float32Array([0.0, 0.0, 2.0, 0.0, 0.0, 2.0]),
+	2
+)
+const normal = new THREE.BufferAttribute(
+	new Float32Array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0]),
+	3
+)
+
+geom.setAttribute('position', position)
+geom.setAttribute('uv', uv)
+geom.setAttribute('normal', normal)
+const materialBg = new THREE.ShaderMaterial({
+	vertexShader: vertexBG,
+	fragmentShader: fragmentBG,
+	depthWrite: false,
+})
+
+const bg = new THREE.Mesh(geom, materialBg)
+bg.renderOrder = -1
+scene.add(bg)
+
+const geometries = []
+const size = 0.5
+const gridSize = 11
+const halGridSize = gridSize / 2
+
+for (let y = 0; y < 2; y++) {
+	for (let z = 0; z < gridSize; z++) {
+		for (let x = 0; x < gridSize; x++) {
+			if (Math.random() > 0.5) continue
+			const g = new THREE.PlaneGeometry(size, size)
+			const pos = new THREE.Vector3(x - halGridSize, y - 0.5, z - halGridSize)
+			pos.multiplyScalar(size)
+			g.translate(...pos)
+			const step = Math.floor((Math.random() * Math.PI) / (Math.PI * 0.5))
+			console.log('step', step)
+			g.rotateY(step * Math.PI * 0.5)
+			g.translate(size * step * 0.5, 0, size * step * 0.5)
+
+			geometries.push(g)
+		}
+	}
+}
+
+const mat = new THREE.ShaderMaterial({
+	vertexShader: vertexSquare,
+	fragmentShader: fragmentSquare,
+	transparent: true,
+	wireframe: true,
+	depthTest: false,
+	uniforms: {
+		uTime: {
+			value: 0,
+		},
+		uProgress: {
+			value: config.progress,
+		},
+	},
+})
+const panleGeometry = BufferGeometryUtils.mergeGeometries(geometries)
+
+const panel = new THREE.Mesh(panleGeometry, mat)
+scene.add(panel)
+
+panel.position.set(0, 1, 0)
+scene.add(panel)
 
 /**
  * Show the axes of coordinates system
@@ -165,6 +284,14 @@ const renderer = new THREE.WebGLRenderer({
 document.body.appendChild(renderer.domElement)
 handleResize()
 
+// const ktx2loader = new KTX2Loader()
+// ktx2loader.setTranscoderPath('/ktx2/')
+// ktx2loader.detectSupport(renderer)
+// ktx2loader.load('/textures/triangles.ktx2', (texture) => {
+// 	texture.wrapS = THREE.RepeatWrapping
+// 	texture.wrapT = THREE.RepeatWrapping
+// 	material.uniforms.uTriangles.value = texture
+// })
 // renderer.toneMapping = THREE.ACESFilmicToneMapping
 // renderer.toneMappingExposure = 2.5
 
@@ -182,6 +309,28 @@ controls.enableDamping = true
 const clock = new THREE.Clock()
 let time = 0
 
+// gsap.to(material.uniforms.uProgress, {
+// 	value: 1,
+// 	duration: 4,
+// 	delay: 0,
+// 	ease: 'power2.in',
+// })
+// gsap.to(mat.uniforms.uProgress, {
+// 	value: 1,
+// 	duration: 4,
+// 	delay: 0,
+// 	ease: 'power2.in',
+// })
+
+// gsap.to(camera.position, {
+// 	y: 1.5,
+// 	x: 2,
+// 	z: 2,
+// 	duration: 4,
+// 	delay: 0.5,
+// 	ease: 'power3.inOut',
+// })
+
 /**
  * frame loop
  */
@@ -196,6 +345,7 @@ function tic() {
 	 */
 	// const time = clock.getElapsedTime()
 	material.uniforms.uTime.value = time
+	mat.uniforms.uTime.value = time
 
 	ico.rotation.x += 0.01
 
