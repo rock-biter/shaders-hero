@@ -6,8 +6,6 @@ import { Pane } from 'tweakpane'
 
 import vertexShader from './shaders/base/vertex.glsl'
 import fragmentShader from './shaders/base/fragment.glsl'
-import particlesFragmentShader from './shaders/particles/fragment.glsl'
-import particlesVertexShader from './shaders/particles/vertex.glsl'
 
 /**
  * Debug

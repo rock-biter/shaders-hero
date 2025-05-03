@@ -1,16 +1,13 @@
 #include ../noise.glsl;
 #include ../perlin.glsl;
 
-varying vec2 vUv;
-varying vec3 vNormal;
-varying vec3 vWorldPosition;
-
 uniform float uTime;
 uniform float uAmplitude;
 uniform float uFrequency;
 
-
-
+varying vec2 vUv;
+varying vec3 vNormal;
+varying vec3 vWorldPosition;
 varying vec3 vParallax;
 varying vec3 vTangent;
 
