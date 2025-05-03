@@ -99,36 +99,15 @@ const material = new THREE.ShaderMaterial({
 		uAmplitude: {
 			value: config.perlin.amplitude,
 		},
-		uOctaves: {
-			value: config.octaves,
-		},
-		uMap: {
-			value: map,
-		},
-		uPerlin: {
-			value: mapPerlin,
-		},
-		uCurlSteps: {
-			value: config.curl.steps,
-		},
 	},
 })
-const boxGeometry = new THREE.BoxGeometry(3.3, 3.3, 3.3)
-const icoGeometry = new THREE.IcosahedronGeometry(3)
-const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
-const box = new THREE.Mesh(boxGeometry, material)
-const ico = new THREE.Mesh(icoGeometry, material)
-const torus = new THREE.Mesh(torusGeometry, material)
-// torus.position.x = 3
-// box.position.x = -3
-torus.rotation.x = -Math.PI * 0.2
-torus.scale.setScalar(3)
+
 const planeGeometry = new THREE.PlaneGeometry(5, 5, 50, 50)
-// planeGeometry.rotateX(-Math.PI / 2)
+planeGeometry.rotateX(-Math.PI / 2)
 const plane = new THREE.Mesh(planeGeometry, material)
 // plane.position.y = -2
 
-scene.add(box)
+scene.add(plane)
 
 // background della scena
 scene.background = new THREE.Color(0x000033)
@@ -197,11 +176,8 @@ function tic() {
 	// const time = clock.getElapsedTime()
 	material.uniforms.uTime.value = time
 
-	ico.rotation.x += 0.01
-
 	// __controls_update__
 	controls.update()
-
 	renderer.render(scene, camera)
 
 	requestAnimationFrame(tic)
