@@ -102,7 +102,7 @@ const material = new THREE.ShaderMaterial({
 	},
 })
 
-const planeGeometry = new THREE.PlaneGeometry(5, 5, 50, 50)
+const planeGeometry = new THREE.PlaneGeometry(3, 3, 50, 50)
 planeGeometry.rotateX(-Math.PI / 2)
 const plane = new THREE.Mesh(planeGeometry, material)
 // plane.position.y = -2
@@ -125,7 +125,7 @@ const sizes = {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(3, 2, 6)
+camera.position.set(3, 3, 3)
 camera.lookAt(new THREE.Vector3(2, 2.5, 0))
 
 /**
