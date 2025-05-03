@@ -159,29 +159,13 @@ const material = new THREE.ShaderMaterial({
 		uTiles: new THREE.Uniform(tiles),
 	},
 })
-const boxGeometry = new THREE.BoxGeometry(3.3, 3.3, 3.3)
-const icoGeometry = new THREE.IcosahedronGeometry(3)
-const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
-const box = new THREE.Mesh(boxGeometry, material)
-const ico = new THREE.Mesh(icoGeometry, material)
-const torus = new THREE.Mesh(torusGeometry, material)
-// torus.position.x = 3
-// box.position.x = -3
-torus.rotation.x = -Math.PI * 0.2
-torus.scale.setScalar(3)
+
 const planeGeometry = new THREE.PlaneGeometry(15, 15, 200, 200)
 planeGeometry.rotateX(-Math.PI / 2)
 const plane = new THREE.Mesh(planeGeometry, material)
 // plane.position.y = -2
 
 scene.add(plane)
-
-// background della scena
-// scene.background = new THREE.Color(0.36, 0.38, 0.44)
-
-// pane.addBinding(scene, 'background', {
-// 	color: { type: 'float' },
-// })
 
 /**
  * render sizes
@@ -377,8 +361,6 @@ function tic() {
 	material.uniforms.uTime.value = time
 	mat.uniforms.uTime.value = time
 	windMat.uniforms.uTime.value = time
-
-	ico.rotation.x += 0.01
 
 	// __controls_update__
 	controls.update()
