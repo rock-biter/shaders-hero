@@ -10,3 +10,9 @@ float remap(float currentValue, float inMin, float inMax, float outMin, float ou
   float t = inverseLerp(currentValue, inMin, inMax);
   return mix(outMin, outMax, t);
 }
+
+float falloff(float d, float start, float end, float margin, float progress) {
+  float m = margin * sign(end - start);
+  float p = mix(start - m, end, progress);
+  return 1.0 - smoothstep(p, p + m, d);
+}

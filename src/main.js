@@ -10,10 +10,6 @@ import fragmentShader from './shaders/base/fragment.glsl'
 import fireVertex from './shaders/fire/vertex.glsl'
 import fireFragment from './shaders/fire/fragment.glsl'
 
-import particlesFragmentShader from './shaders/particles/fragment.glsl'
-import particlesVertexShader from './shaders/particles/vertex.glsl'
-import { step } from 'three/tsl'
-
 const textureLoader = new THREE.TextureLoader()
 const perlin = textureLoader.load('/textures/perlin-rgba.png')
 perlin.wrapS = THREE.RepeatWrapping
@@ -27,15 +23,15 @@ const config = {
 		size: 500,
 	},
 	burn: {
-		progress: 0.5,
+		progress: 0.3,
 		frequency: 1.09,
 		amplitude: 1.3,
-		offset1: 0.02,
-		smooth1: 0.05,
-		offset2: 0.59,
-		smooth2: 0.46,
-		offset3: 0.54,
-		smooth3: 0.52,
+		alphaOffset: 0.02,
+		alphaMargin: 0.05,
+		burnOffset: 0.5,
+		burnMargin: 0.46,
+		fireOffset: 0.39,
+		fireMargin: 0.52,
 		burnColor: new THREE.Color(0.23, 0.0, 0.0),
 		burnMixExp: 32,
 		fireColor: new THREE.Color(1.0, 0.44, 0.19),
@@ -46,7 +42,17 @@ const config = {
 	fire: {
 		frequency: 4.3,
 		amplitude: 1.1,
-		exp: 5,
+		exp: 3,
+		fallinOffset: 0.3,
+		fallinMargin: 0.5,
+		falloffOffset: -0.1,
+		falloffMargin: 0.2,
+		baseFrequency: 16,
+		baseAmplitude: 0.22,
+		baseStart: -0.1,
+		baseEnd: 0.15,
+		topFrequency: 30,
+		topAmplitude: 0.1,
 	},
 	wireframe: false,
 }
@@ -125,23 +131,23 @@ pane.addBinding(config, 'wireframe').on('change', (ev) => {
 		})
 
 	burn
-		.addBinding(config.burn, 'offset3', {
+		.addBinding(config.burn, 'fireOffset', {
 			min: -1.0,
 			max: 1.0,
 			step: 0.01,
 		})
 		.on('change', (ev) => {
-			material.uniforms.uOffset3.value = ev.value
+			material.uniforms.uFireOffset.value = ev.value
 		})
 
 	burn
-		.addBinding(config.burn, 'smooth3', {
+		.addBinding(config.burn, 'fireMargin', {
 			min: -1.0,
 			max: 1.0,
 			step: 0.01,
 		})
 		.on('change', (ev) => {
-			material.uniforms.uSmooth3.value = ev.value
+			material.uniforms.uFireMargin.value = ev.value
 		})
 
 	burn.addBinding(config.burn, 'burnColor', {
@@ -149,23 +155,23 @@ pane.addBinding(config, 'wireframe').on('change', (ev) => {
 	})
 
 	burn
-		.addBinding(config.burn, 'offset2', {
+		.addBinding(config.burn, 'burnOffset', {
 			min: -1.0,
 			max: 1.0,
 			step: 0.01,
 		})
 		.on('change', (ev) => {
-			material.uniforms.uOffset2.value = ev.value
+			material.uniforms.uBurnOffset.value = ev.value
 		})
 
 	burn
-		.addBinding(config.burn, 'smooth2', {
+		.addBinding(config.burn, 'burnMargin', {
 			min: -1.0,
 			max: 1.0,
 			step: 0.01,
 		})
 		.on('change', (ev) => {
-			material.uniforms.uSmooth2.value = ev.value
+			material.uniforms.uBurnMargin.value = ev.value
 		})
 
 	burn
@@ -179,13 +185,22 @@ pane.addBinding(config, 'wireframe').on('change', (ev) => {
 		})
 
 	burn
-		.addBinding(config.burn, 'offset1', {
+		.addBinding(config.burn, 'alphaOffset', {
 			min: -1.0,
 			max: 1.0,
 			step: 0.01,
 		})
 		.on('change', (ev) => {
-			material.uniforms.uOffset1.value = ev.value
+			material.uniforms.uAlphaOffset.value = ev.value
+		})
+	burn
+		.addBinding(config.burn, 'alphaMargin', {
+			min: -1.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			material.uniforms.uAlphaMargin.value = ev.value
 		})
 }
 
@@ -200,7 +215,7 @@ pane.addBinding(config, 'wireframe').on('change', (ev) => {
 			step: 0.01,
 		})
 		.on('change', (ev) => {
-			material.uniforms.uFireFrequency.value = ev.value
+			fireMaterial.uniforms.uFireFrequency.value = ev.value
 		})
 
 	fire
@@ -210,7 +225,7 @@ pane.addBinding(config, 'wireframe').on('change', (ev) => {
 			step: 0.01,
 		})
 		.on('change', (ev) => {
-			material.uniforms.uFireAmplitude.value = ev.value
+			fireMaterial.uniforms.uFireAmplitude.value = ev.value
 		})
 
 	fire
@@ -220,7 +235,107 @@ pane.addBinding(config, 'wireframe').on('change', (ev) => {
 			step: 0.01,
 		})
 		.on('change', (ev) => {
-			material.uniforms.uFireExpAmplitude.value = ev.value
+			fireMaterial.uniforms.uFireExpAmplitude.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'fallinOffset', {
+			min: -1,
+			max: 1,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uFireFallinOffset.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'fallinMargin', {
+			min: -1,
+			max: 1,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uFireFallinMargin.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'falloffOffset', {
+			min: -1,
+			max: 1,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uFireFalloffOffset.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'falloffMargin', {
+			min: -1,
+			max: 1,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uFireFalloffMargin.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'baseFrequency', {
+			min: 0.01,
+			max: 50,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uBaseFrequency.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'baseAmplitude', {
+			min: 0,
+			max: 2,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uBaseAmplitude.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'baseStart', {
+			min: -1,
+			max: 1,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uBaseStart.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'baseEnd', {
+			min: -1.0,
+			max: 1,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uBaseEnd.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'topFrequency', {
+			min: 0.01,
+			max: 50,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uTopFrequency.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'topAmplitude', {
+			min: 0,
+			max: 10,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uTopAmplitude.value = ev.value
 		})
 }
 
@@ -241,18 +356,6 @@ const sizes = {
 	width: window.innerWidth,
 	height: window.innerHeight,
 }
-
-const cubeTextureLoader = new THREE.CubeTextureLoader()
-const envMap = cubeTextureLoader.load([
-	'/env/01/px.png',
-	'/env/01/nx.png',
-	'/env/01/py.png',
-	'/env/01/ny.png',
-	'/env/01/pz.png',
-	'/env/01/nz.png',
-])
-
-// scene.background = envMap
 
 /**
  * BOX
@@ -278,12 +381,12 @@ const material = new THREE.ShaderMaterial({
 		uFrequency: {
 			value: config.burn.frequency,
 		},
-		uOffset1: { value: config.burn.offset1 },
-		uSmooth1: { value: config.burn.smooth1 },
-		uOffset2: { value: config.burn.offset2 },
-		uSmooth2: { value: config.burn.smooth2 },
-		uOffset3: { value: config.burn.offset3 },
-		uSmooth3: { value: config.burn.smooth3 },
+		uAlphaOffset: { value: config.burn.alphaOffset },
+		uAlphaMargin: { value: config.burn.alphaMargin },
+		uBurnOffset: { value: config.burn.burnOffset },
+		uBurnMargin: { value: config.burn.burnMargin },
+		uFireOffset: { value: config.burn.fireOffset },
+		uFireMargin: { value: config.burn.fireMargin },
 		uBurnColor: { value: config.burn.burnColor },
 		uBurnMixExp: { value: config.burn.burnMixExp },
 		uFireColor: { value: config.burn.fireColor },
@@ -291,7 +394,6 @@ const material = new THREE.ShaderMaterial({
 		uFireScale: { value: config.burn.fireScale },
 		uFireMixExp: { value: config.burn.fireMixExp },
 		uFireFrequency: { value: config.fire.frequency },
-		uFireAmplitude: { value: config.fire.amplitude },
 		uFireExpAmplitude: { value: config.fire.exp },
 		uPointerVelocity: { value: new THREE.Vector2(0, 0) },
 	},
@@ -302,7 +404,40 @@ const fireMaterial = new THREE.ShaderMaterial({
 	vertexShader: fireVertex,
 	transparent: true,
 	side: THREE.DoubleSide,
-	uniforms: material.uniforms,
+	uniforms: {
+		...material.uniforms,
+		uFireAmplitude: { value: config.fire.amplitude },
+		uFireFallinOffset: {
+			value: config.fire.fallinOffset,
+		},
+		uFireFallinMargin: {
+			value: config.fire.fallinMargin,
+		},
+		uFireFalloffOffset: {
+			value: config.fire.falloffOffset,
+		},
+		uFireFalloffMargin: {
+			value: config.fire.falloffMargin,
+		},
+		uBaseFrequency: {
+			value: config.fire.baseFrequency,
+		},
+		uBaseAmplitude: {
+			value: config.fire.baseAmplitude,
+		},
+		uBaseStart: {
+			value: config.fire.baseStart,
+		},
+		uBaseEnd: {
+			value: config.fire.baseEnd,
+		},
+		uTopFrequency: {
+			value: config.fire.topFrequency,
+		},
+		uTopAmplitude: {
+			value: config.fire.topAmplitude,
+		},
+	},
 	wireframe: config.wireframe,
 	// depthTest: false,
 	depthWrite: false,
@@ -337,97 +472,16 @@ const cardMap = textureLoader.load('/textures/charizard.png', () => {
 	 * https://tympanus.net/codrops/2025/02/17/implementing-a-dissolve-effect-with-shaders-and-particles-in-three-js/
 	 */
 
+	// scene.add(plane, fire)
 	scene.add(plane, fire)
 })
-
-// const boxGeometry = new THREE.BoxGeometry(1, 1, 1, 5, 5, 5)
-// const icoGeometry = new THREE.IcosahedronGeometry(1, 2)
-// const torusGeometry = new THREE.TorusGeometry(0.5, 0.3, 16, 100)
-// const box = new THREE.Mesh(boxGeometry, material)
-// const ico = new THREE.Mesh(icoGeometry, material)
-// const torus = new THREE.Mesh(torusGeometry, material)
-// torus.rotation.x = -Math.PI * 0.2
-// torus.position.x = 3
-// box.position.x = -3
-// box.rotation.y = 0.2
-
-// scene.add(box)
-const particlesGeom = new THREE.BufferGeometry()
-const count = 10000
-const position = new Float32Array(count * 3)
-const color = new Float32Array(count * 3)
-const random = new Float32Array(count)
-
-for (let i = 0; i < count; i++) {
-	const index = i * 3
-	const dir = new THREE.Vector3().randomDirection()
-	const { x, y, z } = dir
-
-	position[index + 0] = x * (Math.random() * 10 + 10)
-	position[index + 1] = y * (Math.random() * 10 + 10)
-	position[index + 2] = z * (Math.random() * 10 + 10)
-	color[index + 0] = Math.random()
-	color[index + 1] = Math.random()
-	color[index + 2] = Math.random()
-
-	random[index] = Math.random()
-}
-particlesGeom.setAttribute('position', new THREE.BufferAttribute(position, 3))
-particlesGeom.setAttribute('color', new THREE.BufferAttribute(color, 3))
-particlesGeom.setAttribute('aRandom', new THREE.BufferAttribute(random, 1))
-
-const particleShape = textureLoader.load('/textures/particles/star.png')
-
-// const pointsMaterial = new PointsMaterial({
-// 	size: 0.5,
-// 	map: particleShape,
-// 	// color: new THREE.Color('orange'),
-// 	transparent: true,
-// 	depthWrite: false,
-// 	blending: THREE.AdditiveBlending,
-// 	vertexColors: true,
-// })
-const pointsMaterial = new THREE.ShaderMaterial({
-	vertexShader: particlesVertexShader,
-	fragmentShader: particlesFragmentShader,
-	transparent: true,
-	depthWrite: false,
-	blending: THREE.AdditiveBlending,
-	uniforms: {
-		uMap: {
-			value: particleShape,
-		},
-		uSize: {
-			value: config.particles.size,
-		},
-		uResolution: {
-			value: new THREE.Vector2(sizes.width, sizes.height),
-		},
-		uTime: {
-			value: 0,
-		},
-	},
-})
-particlesGeom.getAttribute('position').setUsage(THREE.DynamicDrawUsage)
-const particles = new THREE.Points(particlesGeom, pointsMaterial)
-
-// scene.add(particles)
-
-// const debugMesh = new THREE.Mesh(
-// 	boxGeometry,
-// 	new THREE.MeshBasicMaterial({ color: 0xffffff, envMap: envMap })
-// )
-
-// debugMesh.position.x = -5
-
-// scene.add(debugMesh)
 
 /**
  * Camera
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(1, 2, 4)
+camera.position.set(0, -3, 1)
 camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 
 /**
@@ -511,7 +565,6 @@ function tic() {
 
 	// posAttr.needsUpdate = true
 
-	pointsMaterial.uniforms.uTime.value = time
 	material.uniforms.uTime.value = time
 	fireMaterial.uniforms.uPointerVelocity.value = velocity
 
@@ -537,9 +590,6 @@ function handleResize() {
 	camera.updateProjectionMatrix()
 
 	renderer.setSize(sizes.width, sizes.height)
-
-	pointsMaterial.uniforms.uResolution.value.x = sizes.width
-	pointsMaterial.uniforms.uResolution.value.y = sizes.height
 
 	const pixelRatio = Math.min(window.devicePixelRatio, 2)
 	renderer.setPixelRatio(pixelRatio)
