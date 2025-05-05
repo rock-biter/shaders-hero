@@ -47,6 +47,8 @@ const config = {
 		baseAmplitude: 0.25,
 		baseStart: -0.1,
 		baseEnd: 0.35,
+		topFrequency: 30,
+		topAmplitude: 0.1,
 	},
 }
 
@@ -314,6 +316,26 @@ fire
 	.on('change', (ev) => {
 		fireMaterial.uniforms.uBaseEnd.value = ev.value
 	})
+
+fire
+	.addBinding(config.fire, 'topFrequency', {
+		min: 0,
+		max: 50,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		fireMaterial.uniforms.uTopFrequency.value = ev.value
+	})
+
+fire
+	.addBinding(config.fire, 'topAmplitude', {
+		min: 0,
+		max: 50,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		fireMaterial.uniforms.uTopAmplitude.value = ev.value
+	})
 /**
  * Scene
  */
@@ -367,6 +389,7 @@ const fireMaterial = new THREE.ShaderMaterial({
 	uniforms: {
 		...globalUniforms,
 		uFireColor: cardMaterial.uniforms.uFireColor,
+		uFireScale: cardMaterial.uniforms.uFireScale,
 		uFrequency: cardMaterial.uniforms.uFrequency,
 		uAmplitude: cardMaterial.uniforms.uAmplitude,
 		uFireFrequency: {
@@ -390,6 +413,15 @@ const fireMaterial = new THREE.ShaderMaterial({
 		},
 		uBaseStart: { value: config.fire.baseStart },
 		uBaseEnd: { value: config.fire.baseEnd },
+		uTopFrequency: {
+			value: config.fire.topFrequency,
+		},
+		uTopAmplitude: {
+			value: config.fire.topAmplitude,
+		},
+		uVelocity: {
+			value: new THREE.Vector2(0),
+		},
 	},
 })
 
@@ -411,7 +443,7 @@ loadingManager.onLoad = () => {
 	const cardGeometry = new THREE.PlaneGeometry(2, 2 / aspect)
 	const card = new THREE.Mesh(cardGeometry, cardMaterial)
 
-	const fireGeometry = new THREE.PlaneGeometry(2, 2 / aspect, 150, 300)
+	const fireGeometry = new THREE.PlaneGeometry(2, 2 / aspect, 250, 400)
 	const fire = new THREE.Mesh(fireGeometry, fireMaterial)
 	fire.position.z = 0.001
 	scene.add(card, fire)
@@ -422,7 +454,7 @@ loadingManager.onLoad = () => {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(0, -3, 1)
+camera.position.set(1, 2, 4)
 camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 
 /**
@@ -457,6 +489,29 @@ controls.enableDamping = true
 const clock = new THREE.Clock()
 let time = 0
 
+const pointer = new THREE.Vector2()
+const prevPointer = new THREE.Vector2()
+const velocity = new THREE.Vector2()
+
+let isMoving = false
+
+window.addEventListener('mousemove', (e) => {
+	if (!isMoving) return
+	pointer.x = 2 * (e.clientX / window.innerWidth) - 1
+	pointer.y = -2 * (e.clientY / window.innerHeight) + 1
+})
+
+window.addEventListener('mousedown', (e) => {
+	isMoving = true
+	pointer.x = 2 * (e.clientX / window.innerWidth) - 1
+	pointer.y = -2 * (e.clientY / window.innerHeight) + 1
+	prevPointer.copy(pointer)
+})
+
+window.addEventListener('mouseup', () => {
+	isMoving = false
+})
+
 /**
  * frame loop
  */
@@ -470,6 +525,12 @@ function tic() {
 	 * tempo totale trascorso dall'inizio
 	 */
 
+	prevPointer.lerp(pointer, deltaTime * 3)
+	velocity.copy(pointer).sub(prevPointer)
+
+	// console.log(velocity.x)
+
+	fireMaterial.uniforms.uVelocity.value = velocity
 	globalUniforms.uTime.value = time
 
 	// __controls_update__
