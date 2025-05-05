@@ -1,20 +1,20 @@
 #include ../functions.glsl;
-#include ../lights.glsl;
 #include ../noise.glsl;
 #include ../perlin.glsl;
 #include ../curl.glsl;
 #include ../fbm.glsl;
 
-uniform float uTime;
-uniform float uProgress;
+uniform vec3 uFireColor;
 
 varying vec2 vUv;
 varying vec3 vWorldPosition;
+varying float vHeight;
 
 void main() {
+  float alpha = 1.0;
+  vec3 color = uFireColor;
 
-  vec2 uv = vec2(vUv);
-  vec3 color = vec3(1.0);
+  alpha *= smoothstep(0.001,0.03, vHeight);
 
-  gl_FragColor = vec4(color,1.0);
+  gl_FragColor = vec4(color, alpha);
 }

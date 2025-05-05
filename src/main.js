@@ -4,8 +4,11 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { Pane } from 'tweakpane'
 
-import vertexShader from './shaders/base/vertex.glsl'
-import fragmentShader from './shaders/base/fragment.glsl'
+import vertexShader from './shaders/card/vertex.glsl'
+import fragmentShader from './shaders/card/fragment.glsl'
+
+import fireVertexShader from './shaders/fire/vertex.glsl'
+import fireFragmentShader from './shaders/fire/fragment.glsl'
 
 const loadingManager = new THREE.LoadingManager()
 const textureLoader = new THREE.TextureLoader(loadingManager)
@@ -15,6 +18,32 @@ const textureLoader = new THREE.TextureLoader(loadingManager)
  */
 const config = {
 	progress: 0.3,
+	burn: {
+		frequency: 1.09,
+		amplitude: 1.3,
+		alphaOffset: 0.02,
+		alphaMargin: 0.05,
+		burnColor: new THREE.Color(0.23, 0.0, 0.0),
+		burnOffset: 0.5,
+		burnMargin: 0.46,
+		burnExp: 32,
+		fireColor: new THREE.Color(1.0, 0.44, 0.19),
+		fireOffset: 0.39,
+		fireMargin: 0.52,
+		fireScale: 4.78,
+		fireExp: 1.6,
+		fireMixExp: 7.4,
+	},
+	fire: {
+		wireframe: false,
+		frequency: 4.3,
+		amplitude: 1.1,
+		expAmplitude: 3,
+		fallinOffset: 0.3,
+		fallinMargin: 0.5,
+		falloffOffset: -0.1,
+		falloffMargin: 0.2,
+	},
 }
 
 const globalUniforms = {
@@ -23,11 +52,224 @@ const globalUniforms = {
 }
 const pane = new Pane()
 
-pane.addBinding(config, 'progress', {
-	min: 0,
-	max: 1,
-	step: 0.001,
+pane
+	.addBinding(config, 'progress', {
+		min: 0,
+		max: 1,
+		step: 0.001,
+	})
+	.on('change', (ev) => {
+		globalUniforms.uProgress.value = ev.value
+	})
+
+{
+	const burn = pane.addFolder({
+		title: 'Burn',
+		expanded: false,
+	})
+
+	burn
+		.addBinding(config.burn, 'frequency', {
+			min: 0.01,
+			max: 3,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			cardMaterial.uniforms.uFrequency.value = ev.value
+		})
+
+	burn
+		.addBinding(config.burn, 'amplitude', {
+			min: 0,
+			max: 2,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			cardMaterial.uniforms.uAmplitude.value = ev.value
+		})
+
+	burn
+		.addBinding(config.burn, 'alphaOffset', {
+			min: -1.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			cardMaterial.uniforms.uAlphaOffset.value = ev.value
+		})
+	burn
+		.addBinding(config.burn, 'alphaMargin', {
+			min: -1.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			cardMaterial.uniforms.uAlphaMargin.value = ev.value
+		})
+
+	burn.addBinding(config.burn, 'burnColor', {
+		color: { type: 'float' },
+	})
+
+	burn
+		.addBinding(config.burn, 'burnOffset', {
+			min: -1.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			cardMaterial.uniforms.uBurnOffset.value = ev.value
+		})
+	burn
+		.addBinding(config.burn, 'burnMargin', {
+			min: -1.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			cardMaterial.uniforms.uBurnMargin.value = ev.value
+		})
+
+	burn
+		.addBinding(config.burn, 'burnExp', {
+			min: 0.0,
+			max: 64,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			cardMaterial.uniforms.uBurnExp.value = ev.value
+		})
+
+	burn.addBinding(config.burn, 'fireColor', {
+		color: { type: 'float' },
+	})
+
+	burn
+		.addBinding(config.burn, 'fireOffset', {
+			min: -1.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			cardMaterial.uniforms.uFireOffset.value = ev.value
+		})
+
+	burn
+		.addBinding(config.burn, 'fireMargin', {
+			min: -1.0,
+			max: 1.0,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			cardMaterial.uniforms.uFireMargin.value = ev.value
+		})
+
+	burn
+		.addBinding(config.burn, 'fireScale', {
+			min: 0,
+			max: 20,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			cardMaterial.uniforms.uFireScale.value = ev.value
+		})
+
+	burn
+		.addBinding(config.burn, 'fireExp', {
+			min: 0,
+			max: 10,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			cardMaterial.uniforms.uFireExp.value = ev.value
+		})
+
+	burn
+		.addBinding(config.burn, 'fireMixExp', {
+			min: 0,
+			max: 32,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			cardMaterial.uniforms.uFireMixExp.value = ev.value
+		})
+}
+
+const fire = pane.addFolder({ title: 'Fire', expanded: true })
+
+fire.addBinding(config.fire, 'wireframe').on('change', (ev) => {
+	fireMaterial.wireframe = ev.value
 })
+
+fire
+	.addBinding(config.fire, 'frequency', {
+		min: 0.01,
+		max: 10,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		fireMaterial.uniforms.uFireFrequency.value = ev.value
+	})
+
+fire
+	.addBinding(config.fire, 'amplitude', {
+		min: 0,
+		max: 3,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		fireMaterial.uniforms.uFireAmplitude.value = ev.value
+	})
+
+fire
+	.addBinding(config.fire, 'expAmplitude', {
+		min: 0,
+		max: 10,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		fireMaterial.uniforms.uFireExpAmplitude.value = ev.value
+	})
+
+fire
+	.addBinding(config.fire, 'fallinOffset', {
+		min: -1,
+		max: 1,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		fireMaterial.uniforms.uFireFallinOffset.value = ev.value
+	})
+
+fire
+	.addBinding(config.fire, 'fallinMargin', {
+		min: 0,
+		max: 1,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		fireMaterial.uniforms.uFireFallinMargin.value = ev.value
+	})
+
+fire
+	.addBinding(config.fire, 'falloffOffset', {
+		min: -1,
+		max: 1,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		fireMaterial.uniforms.uFireFalloffOffset.value = ev.value
+	})
+
+fire
+	.addBinding(config.fire, 'falloffMargin', {
+		min: 0,
+		max: 1,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		fireMaterial.uniforms.uFireFalloffMargin.value = ev.value
+	})
 
 /**
  * Scene
@@ -47,25 +289,89 @@ const sizes = {
  * BOX
  */
 // const material = new THREE.MeshNormalMaterial()
-const material = new THREE.ShaderMaterial({
+const cardMaterial = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
+	side: THREE.DoubleSide,
+	transparent: true,
 	uniforms: {
 		...globalUniforms,
+		uFrequency: { value: config.burn.frequency },
+		uAmplitude: { value: config.burn.amplitude },
+		uAlphaOffset: { value: config.burn.alphaOffset },
+		uAlphaMargin: { value: config.burn.alphaMargin },
+		uBurnColor: { value: config.burn.burnColor },
+		uBurnOffset: { value: config.burn.burnOffset },
+		uBurnMargin: { value: config.burn.burnMargin },
+		uBurnExp: { value: config.burn.burnExp },
+		uFireColor: { value: config.burn.fireColor },
+		uFireOffset: { value: config.burn.fireOffset },
+		uFireMargin: { value: config.burn.fireMargin },
+		uFireScale: { value: config.burn.fireScale },
+		uFireExp: { value: config.burn.fireExp },
+		uFireMixExp: { value: config.burn.fireMixExp },
+	},
+})
+
+const fireMaterial = new THREE.ShaderMaterial({
+	fragmentShader: fireFragmentShader,
+	vertexShader: fireVertexShader,
+	side: THREE.DoubleSide,
+	transparent: true,
+	depthWrite: false,
+	blending: THREE.AdditiveBlending,
+	wireframe: config.fire.wireframe,
+	uniforms: {
+		...globalUniforms,
+		uFireColor: cardMaterial.uniforms.uFireColor,
+		uFrequency: cardMaterial.uniforms.uFrequency,
+		uAmplitude: cardMaterial.uniforms.uAmplitude,
+		uFireFrequency: {
+			value: config.fire.frequency,
+		},
+		uFireAmplitude: {
+			value: config.fire.amplitude,
+		},
+		uFireExpAmplitude: {
+			value: config.fire.expAmplitude,
+		},
+		uFireFallinOffset: { value: config.fire.fallinOffset },
+		uFireFallinMargin: { value: config.fire.fallinMargin },
+		uFireFalloffOffset: { value: config.fire.falloffOffset },
+		uFireFalloffMargin: { value: config.fire.falloffMargin },
 	},
 })
 
 // plane
-const planeGeom = new THREE.PlaneGeometry(2, 2)
-const plane = new THREE.Mesh(planeGeom, material)
-scene.add(plane)
+const frontMap = textureLoader.load('/textures/charizard.png')
+const backMap = textureLoader.load('/textures/backside.png')
+
+loadingManager.onLoad = () => {
+	cardMaterial.uniforms.uMap = {
+		value: frontMap,
+	}
+
+	cardMaterial.uniforms.uBacksideMap = {
+		value: backMap,
+	}
+
+	const aspect = frontMap.image.naturalWidth / frontMap.image.naturalHeight
+
+	const cardGeometry = new THREE.PlaneGeometry(2, 2 / aspect)
+	const card = new THREE.Mesh(cardGeometry, cardMaterial)
+
+	const fireGeometry = new THREE.PlaneGeometry(2, 2 / aspect, 150, 300)
+	const fire = new THREE.Mesh(fireGeometry, fireMaterial)
+	fire.position.z = 0.001
+	scene.add(card, fire)
+}
 
 /**
  * Camera
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(1, 2, 4)
+camera.position.set(0, -3, 1)
 camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 
 /**
@@ -100,28 +406,6 @@ controls.enableDamping = true
 const clock = new THREE.Clock()
 let time = 0
 
-const pointer = new THREE.Vector2()
-const prevPointer = new THREE.Vector2()
-const velocity = new THREE.Vector2()
-let isMoving = false
-
-window.addEventListener('mousemove', (ev) => {
-	if (!isMoving) return
-	pointer.x = (ev.clientX / sizes.width) * 2 - 1
-	pointer.y = -(ev.clientY / sizes.height) * 2 + 1
-})
-
-window.addEventListener('mousedown', (ev) => {
-	isMoving = true
-	pointer.x = (ev.clientX / sizes.width) * 2 - 1
-	pointer.y = -(ev.clientY / sizes.height) * 2 + 1
-	prevPointer.copy(pointer)
-})
-
-window.addEventListener('mouseup', (ev) => {
-	isMoving = false
-})
-
 /**
  * frame loop
  */
@@ -134,22 +418,8 @@ function tic() {
 	/**
 	 * tempo totale trascorso dall'inizio
 	 */
-	// const time = clock.getElapsedTime()
 
-	// const posAttr = particlesGeom.getAttribute('position')
-
-	// for (let i = 0; i < posAttr.count; i++) {
-	// 	const x = posAttr.getX(i)
-	// 	const z = posAttr.getZ(i)
-	// 	const y = Math.sin(x + time) * 0.5 + Math.cos(z + time) * 0.5
-	// 	posAttr.setY(i, y)
-	// }
-	prevPointer.lerp(pointer, deltaTime * 3)
-	velocity.copy(pointer).sub(prevPointer)
-
-	// posAttr.needsUpdate = true
-
-	material.uniforms.uTime.value = time
+	globalUniforms.uTime.value = time
 
 	// __controls_update__
 	controls.update()
