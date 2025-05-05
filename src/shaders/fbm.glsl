@@ -153,7 +153,7 @@ float ridgedFBM(vec3 x, int numOctaves) {
 	vec3 shift = vec3(100);
 	for (int i = 0; i < numOctaves; ++i) {
     normalization += a;
-    float n = noise(x) * 2.0 - 1.0;
+    float n = cnoise(x) * 2.0 - 1.0;
     n = 1.0 - abs(n);
 		v += a * n;
 		x = x * 2.0 + shift;

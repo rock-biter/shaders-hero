@@ -4,14 +4,23 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { Pane } from 'tweakpane'
 
-import vertexShader from './shaders/base/vertex.glsl'
-import fragmentShader from './shaders/base/fragment.glsl'
+import vertexShader from './shaders/parallax/vertex.glsl'
+import fragmentShader from './shaders/parallax/fragment.glsl'
+
+const textureLoader = new THREE.TextureLoader()
+const map = textureLoader.load('/textures/01.jpg')
+map.wrapS = THREE.RepeatWrapping
+map.wrapT = THREE.RepeatWrapping
 
 /**
  * Debug
  */
 const config = {
-	frequency: 3,
+	frequency: 2,
+	parallax: {
+		offset: 0.5,
+		step: 3,
+	},
 }
 const pane = new Pane()
 
@@ -23,6 +32,26 @@ pane
 	})
 	.on('change', (ev) => {
 		material.uniforms.uFrequency.value = ev.value
+	})
+
+pane
+	.addBinding(config.parallax, 'offset', {
+		min: -2.0,
+		max: 2,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uParallaxOffset.value = ev.value
+	})
+
+pane
+	.addBinding(config.parallax, 'step', {
+		min: 0,
+		max: 5,
+		step: 1,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uParallaxStep.value = ev.value
 	})
 
 /**
@@ -55,17 +84,25 @@ const material = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
 	transparent: true,
-	depthWrite: false,
 	uniforms: {
+		uMap: {
+			value: map,
+		},
 		uTime: {
 			value: 0,
 		},
 		uFrequency: {
 			value: config.frequency,
 		},
+		uParallaxOffset: {
+			value: config.parallax.offset,
+		},
+		uParallaxStep: {
+			value: config.parallax.step,
+		},
 	},
 })
-const boxGeometry = new THREE.BoxGeometry(1, 1, 1, 5, 5, 5)
+const boxGeometry = new THREE.BoxGeometry(1, 1, 1)
 boxGeometry.computeTangents()
 const box = new THREE.Mesh(boxGeometry, material)
 scene.add(box)
@@ -75,7 +112,7 @@ scene.add(box)
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(2, 2, 3)
+camera.position.set(0.8, 0.8, 1.5)
 camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 
 /**
