@@ -9,20 +9,7 @@ uniform float uFrequency;
 uniform sampler2D uNoise;
 
 uniform float uProgress;
-
 uniform float uAlphaOffset;
-uniform float uAlphaMargin;
-uniform float uBurnOffset;
-uniform float uBurnMargin;
-uniform float uFireOFfset;
-uniform float uFireMargin;
-uniform vec3 uBurnColor;
-uniform float uBurnMixExp;
-uniform vec3 uFireColor;
-uniform float uFireExp;
-uniform float uFireScale;
-uniform float uFireMixExp;
-
 uniform float uFireFallinOffset;
 uniform float uFireFallinMargin;
 uniform float uFireFalloffOffset;
@@ -44,7 +31,6 @@ void main() {
   vUv = uv;
   vNormal = (modelMatrix * vec4(normal,0.0)).xyz;
   vec3 pos = position;
-  // pos.z += cnoise(position.xy * uFrequency) * uAmplitude;
   vec4 wPos = (modelMatrix * vec4(pos,1.0));
 
   float edge = (1.0 - uProgress * 1.5) * (1.5 + uAmplitude);
@@ -55,7 +41,6 @@ void main() {
   // Fire
   float fireFallin = falloff(d + uFireFallinOffset,2. + uAmplitude, -uAmplitude,uFireFallinMargin,uProgress);
   float t = smoothstep(edge - 0.3, edge + 0.1, d + uAlphaOffset);
-  // t *= 1. - smoothstep(edge + 0.2, edge + 0.3, d + uAlphaOffset);
   float fireFalloff = 1.0 - falloff(d + uFireFalloffOffset,2. + uAmplitude, -uAmplitude,uFireFalloffMargin,uProgress);
 
   // fire height
@@ -65,8 +50,6 @@ void main() {
   fireHeight *= uFireAmplitude;
   fireHeight *= 1. - uProgress * 0.3;
 
-  // vHeight = fireHeight * t;
-  // vHeight = t * 0.2;
   vHeight = fireFallin * fireFalloff;
   vHeight *= fireHeight;
   wPos.z += vHeight;
