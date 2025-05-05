@@ -54,7 +54,7 @@ void main() {
   vHeight *= fireHeight;
   wPos.z += vHeight;
   // oscillazione orizzontale
-  wPos.x += cnoise(vec3(wPos.xy, wPos.z + uTime)) * wPos.z * 0.5 - uPointerVelocity.x * wPos.z * wPos.z * 10.;
+  wPos.x += cnoise(vec3(wPos.xy, wPos.z + uTime)) * wPos.z * 0.5 - clamp(uPointerVelocity.x,-0.1,0.1) * wPos.z * wPos.z * 8.;
   // oscillazione verticale
   wPos.y += cnoise(vec3(wPos.xy + 50., wPos.z + uTime)) * wPos.z * 0.5;
   wPos.y += 1. * wPos.z * wPos.z;
