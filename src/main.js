@@ -43,6 +43,10 @@ const config = {
 		fallinMargin: 0.5,
 		falloffOffset: -0.1,
 		falloffMargin: 0.2,
+		baseFrequency: 16,
+		baseAmplitude: 0.25,
+		baseStart: -0.1,
+		baseEnd: 0.35,
 	},
 }
 
@@ -271,6 +275,45 @@ fire
 		fireMaterial.uniforms.uFireFalloffMargin.value = ev.value
 	})
 
+fire
+	.addBinding(config.fire, 'baseFrequency', {
+		min: 0,
+		max: 50,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		fireMaterial.uniforms.uBaseFrequency.value = ev.value
+	})
+
+fire
+	.addBinding(config.fire, 'baseAmplitude', {
+		min: 0,
+		max: 50,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		fireMaterial.uniforms.uBaseAmplitude.value = ev.value
+	})
+
+fire
+	.addBinding(config.fire, 'baseStart', {
+		min: -1,
+		max: 1,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		fireMaterial.uniforms.uBaseStart.value = ev.value
+	})
+
+fire
+	.addBinding(config.fire, 'baseEnd', {
+		min: -1,
+		max: 3,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		fireMaterial.uniforms.uBaseEnd.value = ev.value
+	})
 /**
  * Scene
  */
@@ -339,6 +382,14 @@ const fireMaterial = new THREE.ShaderMaterial({
 		uFireFallinMargin: { value: config.fire.fallinMargin },
 		uFireFalloffOffset: { value: config.fire.falloffOffset },
 		uFireFalloffMargin: { value: config.fire.falloffMargin },
+		uBaseFrequency: {
+			value: config.fire.baseFrequency,
+		},
+		uBaseAmplitude: {
+			value: config.fire.baseAmplitude,
+		},
+		uBaseStart: { value: config.fire.baseStart },
+		uBaseEnd: { value: config.fire.baseEnd },
 	},
 })
 
