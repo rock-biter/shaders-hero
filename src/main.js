@@ -16,7 +16,7 @@ const textureLoader = new THREE.TextureLoader()
  */
 // __gui__
 const config = {
-	size: 200,
+	size: 100,
 }
 const pane = new Pane()
 
@@ -57,7 +57,7 @@ const sizes = {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(8, 8, 8)
+camera.position.set(3, 3, 3)
 camera.lookAt(new THREE.Vector3(2, 2.5, 0))
 
 /**
@@ -104,22 +104,26 @@ const particlesMaterial = new THREE.ShaderMaterial({
 		uResolution: { value: new THREE.Vector2(sizes.width, sizes.height) },
 		uTime: { value: 0 },
 	},
-	depthWrite: false,
-	blending: THREE.AdditiveBlending,
+	// depthWrite: false,
+	// blending: THREE.AdditiveBlending,
 })
 const boxGeometry = new THREE.BoxGeometry(10, 10, 10, 5, 5, 5)
 const sphereGeometry = new THREE.SphereGeometry(5, 12, 24)
 const particlesGeometry = new THREE.BufferGeometry()
-const count = 100000
+const count = 100
 const position = new Float32Array(count * 3)
 const color = new Float32Array(count * 3)
 const random = new Float32Array(count)
+
 for (let i = 0; i < count; i++) {
 	const index = i * 3
+	const x = (Math.random() - 0.5) * 4
+	const y = (Math.random() - 0.5) * 4
+	const z = (Math.random() - 0.5) * 4
 
-	position[index + 0] = (Math.random() * 2 - 1) * 10
-	position[index + 1] = 0
-	position[index + 2] = (Math.random() * 2 - 1) * 10
+	position[index + 0] = x
+	position[index + 1] = y
+	position[index + 2] = z
 	color[index + 0] = Math.random()
 	color[index + 1] = Math.random()
 	color[index + 2] = Math.random()

@@ -1,3 +1,9 @@
+#include ../functions.glsl;
+#include ../noise.glsl;
+#include ../perlin.glsl;
+#include ../lights.glsl;
+
+
 uniform sampler2D uMap;
 uniform float uTime;
 
@@ -13,23 +19,36 @@ mat2 rotate(float angle) {
 }
 
 void main() {
+  vec3 viewDir = normalize(cameraPosition - vWorldPosition);
   vec2 uv = gl_PointCoord;
   uv.y = 1. - uv.y;
-
-  float angle = uTime * 3. * vRandom + vRandom * 10.;
   uv -= 0.5;
-  uv = rotate(angle) * uv;
-  uv += 0.5;
+  uv *= 2.;
 
-  vec4 colorMap = texture(uMap, uv);
-  // vec3 color = vec3(uv,1.0);
-  vec3 color = colorMap.xyz;
-  color *= vColor;
+  vec3 n = vec3(uv, 0.0);
+  float alpha = acos(length(uv));
+  n.z = sin(alpha);
 
-  float toCamera = length(vWorldPosition - cameraPosition);
-  float fog = 1. - smoothstep(20.,30., toCamera);
+  // from view space to worlspace
+  n = (transpose(viewMatrix) * vec4(n,0.0)).xyz;
 
-  float a = colorMap.a * fog;
+  vec3 light = vec3(0.0);
+
+  light += hemiLight(vec3(0.9,0.9,1.0),vec3(0.2,0.3,0.1), 0.3, n);
+  vec3 lightDir = normalize(vec3(1.,2.,0.5));
+  light += dirLight(vec3(1.0,0.5,0.1),0.7,lightDir, n, -viewDir, 20.);
+
+  vec3 color = vec3(1.0);
+  color *= light;
+
+  float d = length(uv);
+  d = step(1.0,d);
+  float t = 1. - d;
+
+  float a = t;
+  if(a == 0.) {
+    discard;
+  }
   
   gl_FragColor = vec4(color, a);
 }
