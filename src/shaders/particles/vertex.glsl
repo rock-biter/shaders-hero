@@ -1,3 +1,5 @@
+#include ../noise.glsl;
+
 attribute vec3 color;
 attribute float aRandom;
 
@@ -24,6 +26,6 @@ void main() {
   size *= ( 0.5 + vRandom * 0.5);
   gl_PointSize =  size / -mvPosition.z;
   gl_PointSize *= 0.001 * uResolution.y;
-  gl_PointSize *= 1.2 + sin(uTime * aRandom * .5 + aRandom * 100.) * 0.2;
+  gl_PointSize *= 1.2 + noise(uTime * aRandom * .10 + aRandom * 100.) * 0.4;
 
 }
