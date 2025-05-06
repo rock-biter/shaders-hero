@@ -22,8 +22,17 @@ void main() {
   vec3 viewDir = normalize(cameraPosition - vWorldPosition);
   vec2 uv = gl_PointCoord;
   uv.y = 1. - uv.y;
+
+  vec2 uvMap = uv;
+  uvMap -= 0.5;
+  uvMap = rotate(vRandom * 3. + uTime * 0.1) * uvMap;
+  uvMap += 0.5;
+  vec4 mapColor = texture(uMap,uvMap);
+
   uv -= 0.5;
   uv *= 2.;
+
+
 
   vec3 n = vec3(uv, 0.0);
   float alpha = acos(length(uv));
@@ -34,9 +43,11 @@ void main() {
 
   vec3 light = vec3(0.0);
 
-  light += hemiLight(vec3(0.9,0.9,1.0),vec3(0.2,0.3,0.1), 0.3, n);
+  light += hemiLight(vec3(0.9,0.9,1.0),vec3(0.3,0.2,0.1), 0.3, n);
   vec3 lightDir = normalize(vec3(1.,2.,0.5));
-  light += dirLight(vec3(1.0,0.5,0.1),0.7,lightDir, n, -viewDir, 20.);
+  light += dirLight(vec3(1.0,0.5,0.1),0.4,lightDir, n, -viewDir, 20.);
+
+  light = pow(light, vec3(2.0));
 
   vec3 color = vec3(1.0);
   color *= light;
@@ -45,10 +56,11 @@ void main() {
   d = step(1.0,d);
   float t = 1. - d;
 
-  float a = t;
-  if(a == 0.) {
-    discard;
-  }
+  // float a = t;
+  float a = mapColor.a;
+  // if(a == 0.) {
+  //   discard;
+  // }
   
   gl_FragColor = vec4(color, a);
 }

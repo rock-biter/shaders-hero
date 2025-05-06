@@ -20,8 +20,10 @@ void main() {
   vec4 mvPosition = viewMatrix * wPos;
 
   gl_Position = projectionMatrix * mvPosition;
-  gl_PointSize = uSize / -mvPosition.z;
+  float size = uSize;
+  size *= ( 0.5 + vRandom * 0.5);
+  gl_PointSize =  size / -mvPosition.z;
   gl_PointSize *= 0.001 * uResolution.y;
-  // gl_PointSize *= 1.5 + sin(uTime * aRandom + aRandom * 100.) * 0.5;
+  gl_PointSize *= 1.2 + sin(uTime * aRandom * .5 + aRandom * 100.) * 0.2;
 
 }

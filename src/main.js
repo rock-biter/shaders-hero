@@ -16,7 +16,7 @@ const textureLoader = new THREE.TextureLoader()
  */
 // __gui__
 const config = {
-	size: 100,
+	size: 1000,
 }
 const pane = new Pane()
 
@@ -79,7 +79,7 @@ document.body.appendChild(renderer.domElement)
 // renderer.toneMappingExposure = 2.5
 
 // const material = new THREE.MeshNormalMaterial()
-const map = textureLoader.load('/particles/star.png')
+const map = textureLoader.load('/particles/smoke.png')
 // map.flipY = true
 // map.wrapS = THREE.RepeatWrapping
 // map.wrapT = THREE.RepeatWrapping
@@ -104,8 +104,8 @@ const particlesMaterial = new THREE.ShaderMaterial({
 		uResolution: { value: new THREE.Vector2(sizes.width, sizes.height) },
 		uTime: { value: 0 },
 	},
-	// depthWrite: false,
-	// blending: THREE.AdditiveBlending,
+	depthWrite: false,
+	blending: THREE.AdditiveBlending,
 })
 const boxGeometry = new THREE.BoxGeometry(10, 10, 10, 5, 5, 5)
 const sphereGeometry = new THREE.SphereGeometry(5, 12, 24)
@@ -117,9 +117,9 @@ const random = new Float32Array(count)
 
 for (let i = 0; i < count; i++) {
 	const index = i * 3
-	const x = (Math.random() - 0.5) * 4
-	const y = (Math.random() - 0.5) * 4
-	const z = (Math.random() - 0.5) * 4
+	const x = (Math.random() - 0.5) * 2
+	const y = (Math.random() - 0.5) * 1
+	const z = (Math.random() - 0.5) * 2
 
 	position[index + 0] = x
 	position[index + 1] = y
