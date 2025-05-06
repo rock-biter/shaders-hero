@@ -16,14 +16,14 @@ const textureLoader = new THREE.TextureLoader()
  */
 // __gui__
 const config = {
-	size: 1000,
+	size: 2000,
 }
 const pane = new Pane()
 
 pane
 	.addBinding(config, 'size', {
 		min: 0,
-		max: 1000,
+		max: 5000,
 		step: 0.01,
 	})
 	.on('change', (ev) => {
@@ -42,7 +42,11 @@ const scene = new THREE.Scene()
  */
 
 // background della scena
-scene.background = new THREE.Color(0x222222)
+scene.background = new THREE.Color(1, 0.85, 0.59)
+
+pane.addBinding(scene, 'background', {
+	color: { type: 'float' },
+})
 
 /**
  * render sizes
@@ -65,7 +69,7 @@ camera.lookAt(new THREE.Vector3(2, 2.5, 0))
  */
 // __helper_axes__
 const axesHelper = new THREE.AxesHelper(3)
-scene.add(axesHelper)
+// scene.add(axesHelper)
 
 /**
  * renderer
@@ -105,21 +109,27 @@ const particlesMaterial = new THREE.ShaderMaterial({
 		uTime: { value: 0 },
 	},
 	depthWrite: false,
-	blending: THREE.AdditiveBlending,
+	// blending: THREE.AdditiveBlending,
+	blending: THREE.CustomBlending,
+	blendEquation: THREE.AddEquation,
+	blendSrc: THREE.OneFactor,
+	blendDst: THREE.OneMinusSrcAlphaFactor,
+	// blendDst: THREE.OneFactor,
 })
 const boxGeometry = new THREE.BoxGeometry(10, 10, 10, 5, 5, 5)
 const sphereGeometry = new THREE.SphereGeometry(5, 12, 24)
 const particlesGeometry = new THREE.BufferGeometry()
-const count = 100
+const count = 300
 const position = new Float32Array(count * 3)
 const color = new Float32Array(count * 3)
 const random = new Float32Array(count)
 
 for (let i = 0; i < count; i++) {
 	const index = i * 3
-	const x = (Math.random() - 0.5) * 2
-	const y = (Math.random() - 0.5) * 1
-	const z = (Math.random() - 0.5) * 2
+	const dir = new THREE.Vector3().randomDirection()
+	const x = dir.x * Math.random() * 10
+	const y = (Math.random() - 0.5) * 0.5
+	const z = dir.z * Math.random() * 10
 
 	position[index + 0] = x
 	position[index + 1] = y
