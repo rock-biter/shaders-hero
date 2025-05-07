@@ -65,7 +65,7 @@ void main() {
   float t = 1. - d;
 
   // float a = t;
-  float a = mapColor.a;
+  float a = mapColor.a * 1.2;
   // if(a == 0.) {
   //   discard;
   // }

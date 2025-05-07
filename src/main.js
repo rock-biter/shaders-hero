@@ -22,8 +22,8 @@ const pane = new Pane()
 
 pane
 	.addBinding(config, 'size', {
-		min: 0,
-		max: 5000,
+		min: 1200,
+		max: 2800,
 		step: 0.01,
 	})
 	.on('change', (ev) => {
@@ -62,7 +62,7 @@ const sizes = {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(3.5, 2.7, 3.5)
+camera.position.set(3.5, 2.5, 3.5)
 camera.lookAt(new THREE.Vector3(2, 2.5, 0))
 
 const sphere = new THREE.Mesh(
@@ -111,12 +111,13 @@ const bgMat = new THREE.ShaderMaterial({
 	varying vec2 vUv;
 	void main() {
 		
-		vec3 color = vec3(1, 0.85, 0.59);
+		// vec3 color = vec3(1, 0.85, 0.59);
+		vec3 color = vec3(0.,0.03,0.05) * 0.4;
 		vec3 colorB = vec3(0.,0.03,0.05);
 		// color *= length(vUv);
-		float t = smoothstep(-0.2,1.,vUv.y);
-		// float s = smoothstep(-0.5,0.5,vUv.x);
-		color = mix(colorB, color,t * t * t *t);
+		float t = smoothstep(0.3,1.,vUv.y);
+		float s = smoothstep(1.,0.5,vUv.x);
+		color = mix(colorB, color,t * t * t);
 
 		gl_FragColor = vec4(color, 1.0);
   	#include <tonemapping_fragment>
@@ -228,6 +229,7 @@ const controls = new OrbitControls(camera, renderer.domElement)
 controls.enableDamping = true
 controls.autoRotate = true
 controls.rotateSpeed = 0.5
+controls.target.set(0, 0.5, 0)
 
 /**
  * Three js Clock
