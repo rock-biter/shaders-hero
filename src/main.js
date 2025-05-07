@@ -9,6 +9,9 @@ import { Pane } from 'tweakpane'
 import vertexShader from './shaders/particles/vertex.glsl'
 import fragmentShader from './shaders/particles/fragment.glsl'
 
+import eggVert from './shaders/egg/vertex.glsl'
+import eggFrag from './shaders/egg/fragment.glsl'
+
 const textureLoader = new THREE.TextureLoader()
 
 /**
@@ -65,19 +68,25 @@ const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
 camera.position.set(3.5, 2.5, 3.5)
 camera.lookAt(new THREE.Vector3(2, 2.5, 0))
 
-const sphere = new THREE.Mesh(
-	new THREE.SphereGeometry(0.7, 32, 32),
-	new THREE.MeshStandardMaterial({
-		color: new THREE.Color(1, 0.85, 0.59).multiplyScalar(1.5),
-	})
-)
+const eggG = new THREE.SphereGeometry(0.7, 32, 32)
+eggG.scale(1, 1, 1)
+// eggG.computeVertexNormals()
+const eggMat = new THREE.ShaderMaterial({
+	vertexShader: eggVert,
+	fragmentShader: eggFrag,
+	uniforms: {
+		uColor: new THREE.Color(1, 0.85, 0.59).multiplyScalar(1.5),
+		uTime: { value: 0 },
+	},
+})
+const sphere = new THREE.Mesh(eggG, eggMat)
 sphere.scale.y = 1.3
 sphere.position.y = 0.5
 scene.add(sphere)
-const light = new THREE.DirectionalLight(0xffffff, 1.5)
-const light2 = new THREE.HemisphereLight(0x555555, 0x992233, 2)
-light.position.set(0.7, 2, 0.1)
-scene.add(light, light2)
+// const light = new THREE.DirectionalLight(0xffffff, 1.5)
+// const light2 = new THREE.HemisphereLight(0x555555, 0x992233, 2)
+// light.position.set(0.7, 2, 0.1)
+// scene.add(light, light2)
 
 /**
  * Show the axes of coordinates system
@@ -183,7 +192,7 @@ const particlesMaterial = new THREE.ShaderMaterial({
 const boxGeometry = new THREE.BoxGeometry(10, 10, 10, 5, 5, 5)
 const sphereGeometry = new THREE.SphereGeometry(5, 12, 24)
 const particlesGeometry = new THREE.BufferGeometry()
-const count = 900
+const count = 700
 const position = new Float32Array(count * 3)
 const color = new Float32Array(count * 3)
 const random = new Float32Array(count)
@@ -191,9 +200,9 @@ const random = new Float32Array(count)
 for (let i = 0; i < count; i++) {
 	const index = i * 3
 	const dir = new THREE.Vector3().randomDirection()
-	const x = dir.x * Math.random() * 9
+	const x = dir.x * Math.random() * 8
 	const y = (Math.random() - 0.5) * 2
-	const z = dir.z * Math.random() * 9
+	const z = dir.z * Math.random() * 8
 
 	position[index + 0] = x
 	position[index + 1] = y
@@ -249,6 +258,7 @@ function tic() {
 	time += deltaTime
 
 	particlesMaterial.uniforms.uTime.value = time
+	eggMat.uniforms.uTime.value = time
 	/**
 	 * tempo totale trascorso dall'inizio
 	 */
