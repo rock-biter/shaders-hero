@@ -298,4 +298,6 @@ function handleResize() {
 
 	const pixelRatio = Math.min(window.devicePixelRatio, 2)
 	renderer.setPixelRatio(pixelRatio)
+	particlesMaterial.uniforms.uSize.value =
+		config.size * renderer.getPixelRatio()
 }
