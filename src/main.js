@@ -19,7 +19,7 @@ const textureLoader = new THREE.TextureLoader()
  */
 // __gui__
 const config = {
-	size: 1750,
+	size: 1800,
 }
 const pane = new Pane()
 
@@ -65,7 +65,7 @@ const sizes = {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(-1, 3, 3.5)
+camera.position.set(1, 2.2, 4)
 camera.lookAt(new THREE.Vector3(2, 2.5, 0))
 
 const eggG = new THREE.SphereGeometry(0.5, 32, 32)
@@ -81,7 +81,7 @@ const eggMat = new THREE.ShaderMaterial({
 })
 const egg = new THREE.Mesh(eggG, eggMat)
 egg.scale.y = 1.3
-egg.position.y = 0.5
+egg.position.y = 0.2
 scene.add(egg)
 // const light = new THREE.DirectionalLight(0xffffff, 1.5)
 // const light2 = new THREE.HemisphereLight(0x555555, 0x992233, 2)
@@ -238,7 +238,7 @@ const controls = new OrbitControls(camera, renderer.domElement)
 controls.enableDamping = true
 // controls.autoRotate = true
 controls.rotateSpeed = 0.5
-controls.target.set(0, 0.5, 0)
+controls.target.set(0, 0.3, 0)
 
 /**
  * Three js Clock

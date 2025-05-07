@@ -22,11 +22,13 @@ void main() {
 
   vec3 light = vec3(0.);
 
-  light += hemiLight(vec3(0.0,0.5,0.9),vec3(0.9,0.2,0.1), 0.3, n);
+  // light += hemiLight(vec3(0.0,0.5,0.9),vec3(0.9,0.2,0.1), 0.3, n);
+  light += hemiLight(vec3(0.0,0.5,0.9),vec3(0.1,0.01,0.1), 0.4, n);
   vec3 lightDir = normalize(vec3(1.,2.,0.5));
   vec3 lightColor = vec3(0.7,0.4,0.1);
   // vec3 lightColor = vec3(0.4,0.8,0.9) * 0.7;
   light += dirLight(lightColor,1.,lightDir, n, -viewDir, 20.);
+
 
   vec3 baseColor = vec3(1.);
 

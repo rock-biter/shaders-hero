@@ -22,12 +22,16 @@ mat2 rotate(float angle) {
 void main() {
   vec3 viewDir = normalize(cameraPosition - vWorldPosition);
   vec2 uv = gl_PointCoord;
+  
   uv.y = 1. - uv.y;
   
   vec2 uvMap = uv;
+  if(vRandom > 0.5) {
+    uvMap.y = 1.0 - uvMap.y;
+  }
   uvMap -= 0.5;
   float dir = 1.;//sign((vRandom * 2. - 1.));
-  uvMap = rotate(vRandom * dir * 200. + uTime * 0.2 * dir + dir * length(vWorldPosition) * 10.) * uvMap;
+  uvMap = rotate(vRandom * dir * 200. + uTime * 0.2 * dir ) * uvMap;
   uvMap += 0.5;
   vec4 mapColor = texture(uMap,uvMap);
 
@@ -45,6 +49,7 @@ void main() {
 
   vec3 light = vec3(0.);
 
+  // light += hemiLight(vec3(0.3,0.1,0.2)*0.5,vec3(0.8,0.5,0.3), 0.5, n);
   light += hemiLight(vec3(0.3,0.1,0.2)*0.5,vec3(0.8,0.5,0.3), 0.5, n);
   vec3 lightDir = normalize(vec3(1.,2.,0.5));
   vec3 lightColor = vec3(0.7,0.4,0.1);
