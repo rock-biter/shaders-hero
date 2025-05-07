@@ -16,7 +16,7 @@ const textureLoader = new THREE.TextureLoader()
  */
 // __gui__
 const config = {
-	size: 100,
+	size: 300,
 }
 const pane = new Pane()
 
@@ -110,7 +110,7 @@ const particlesMaterial = new THREE.ShaderMaterial({
 const boxGeometry = new THREE.BoxGeometry(10, 10, 10, 5, 5, 5)
 const sphereGeometry = new THREE.SphereGeometry(5, 12, 24)
 const particlesGeometry = new THREE.BufferGeometry()
-const count = 100
+const count = 10
 const position = new Float32Array(count * 3)
 const color = new Float32Array(count * 3)
 const random = new Float32Array(count)

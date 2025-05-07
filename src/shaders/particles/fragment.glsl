@@ -22,6 +22,7 @@ void main() {
   vec3 viewDir = normalize(cameraPosition - vWorldPosition);
   vec2 uv = gl_PointCoord;
   uv.y = 1. - uv.y;
+  vec2 vUv = uv;
   uv -= 0.5;
   uv *= 2.;
 
@@ -50,5 +51,5 @@ void main() {
     discard;
   }
   
-  gl_FragColor = vec4(color, a);
+  gl_FragColor = vec4(color,1.0);
 }
