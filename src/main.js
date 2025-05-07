@@ -43,6 +43,7 @@ const scene = new THREE.Scene()
 
 // background della scena
 scene.background = new THREE.Color(1, 0.85, 0.59)
+// scene.background = new THREE.Color(0.1, 0.1, 0.2)
 
 pane.addBinding(scene, 'background', {
 	color: { type: 'float' },
@@ -61,8 +62,22 @@ const sizes = {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(3, 3, 3)
+camera.position.set(3.5, 2.7, 3.5)
 camera.lookAt(new THREE.Vector3(2, 2.5, 0))
+
+const sphere = new THREE.Mesh(
+	new THREE.SphereGeometry(0.7, 32, 32),
+	new THREE.MeshStandardMaterial({
+		color: new THREE.Color(1, 0.85, 0.59).multiplyScalar(1.5),
+	})
+)
+sphere.scale.y = 1.3
+sphere.position.y = 0.5
+scene.add(sphere)
+const light = new THREE.DirectionalLight(0xffffff, 1.5)
+const light2 = new THREE.HemisphereLight(0x555555, 0x992233, 2)
+light.position.set(0.7, 2, 0.1)
+scene.add(light, light2)
 
 /**
  * Show the axes of coordinates system
@@ -70,6 +85,51 @@ camera.lookAt(new THREE.Vector3(2, 2.5, 0))
 // __helper_axes__
 const axesHelper = new THREE.AxesHelper(3)
 // scene.add(axesHelper)
+
+const bgGeom = new THREE.BufferGeometry()
+bgGeom.setAttribute(
+	'position',
+	new THREE.BufferAttribute(
+		new Float32Array([-1, -1, 0, 3, -1, 0, -1, 3, 0]),
+		3
+	)
+)
+bgGeom.setAttribute(
+	'uv',
+	new THREE.BufferAttribute(new Float32Array([0, 0, 2, 0, 0, 2]), 2)
+)
+
+const bgMat = new THREE.ShaderMaterial({
+	vertexShader: /* glsl */ `
+	varying vec2 vUv;
+	void main() {
+		vUv = uv;
+		gl_Position = vec4(position.xy,0.0,1.0);
+	}
+	`,
+	fragmentShader: /* glsl */ `
+	varying vec2 vUv;
+	void main() {
+		
+		vec3 color = vec3(1, 0.85, 0.59);
+		vec3 colorB = vec3(0.,0.03,0.05);
+		// color *= length(vUv);
+		float t = smoothstep(-0.2,1.,vUv.y);
+		// float s = smoothstep(-0.5,0.5,vUv.x);
+		color = mix(colorB, color,t * t * t *t);
+
+		gl_FragColor = vec4(color, 1.0);
+  	#include <tonemapping_fragment>
+  	#include <colorspace_fragment>
+	}
+	`,
+	depthWrite: false,
+})
+
+const bg = new THREE.Mesh(bgGeom, bgMat)
+bg.renderOrder = -2
+bg.frustumCulled = false
+scene.add(bg)
 
 /**
  * renderer
@@ -94,6 +154,8 @@ const material = new THREE.PointsMaterial({
 	transparent: true,
 	depthWrite: false,
 	blending: THREE.AdditiveBlending,
+	// blending: THREE.MultiplyBlending,
+	// blending: THREE.SubtractiveBlending,
 	vertexColors: true,
 	// sizeAttenuation: false,
 })
@@ -110,16 +172,17 @@ const particlesMaterial = new THREE.ShaderMaterial({
 	},
 	depthWrite: false,
 	// blending: THREE.AdditiveBlending,
+	// blending: THREE.MultiplyBlending,
+	// blending: THREE.SubtractiveBlending,
 	blending: THREE.CustomBlending,
 	blendEquation: THREE.AddEquation,
 	blendSrc: THREE.OneFactor,
 	blendDst: THREE.OneMinusSrcAlphaFactor,
-	// blendDst: THREE.OneFactor,
 })
 const boxGeometry = new THREE.BoxGeometry(10, 10, 10, 5, 5, 5)
 const sphereGeometry = new THREE.SphereGeometry(5, 12, 24)
 const particlesGeometry = new THREE.BufferGeometry()
-const count = 300
+const count = 1000
 const position = new Float32Array(count * 3)
 const color = new Float32Array(count * 3)
 const random = new Float32Array(count)
@@ -128,7 +191,7 @@ for (let i = 0; i < count; i++) {
 	const index = i * 3
 	const dir = new THREE.Vector3().randomDirection()
 	const x = dir.x * Math.random() * 10
-	const y = (Math.random() - 0.5) * 0.5
+	const y = (Math.random() - 0.5) * 2
 	const z = dir.z * Math.random() * 10
 
 	position[index + 0] = x
@@ -163,6 +226,8 @@ handleResize()
 // __controls__
 const controls = new OrbitControls(camera, renderer.domElement)
 controls.enableDamping = true
+controls.autoRotate = true
+controls.rotateSpeed = 0.5
 
 /**
  * Three js Clock
@@ -196,7 +261,7 @@ function tic() {
 	// posAttribute.needsUpdate = true
 
 	// __controls_update__
-	controls.update()
+	controls.update(deltaTime)
 
 	renderer.render(scene, camera)
 
