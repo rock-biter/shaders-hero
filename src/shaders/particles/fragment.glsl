@@ -65,12 +65,12 @@ void main() {
   float t = 1. - d;
 
   // float a = t;
-  float a = mapColor.a * 1.2;
+  float a = mapColor.a * 1.5;
   // if(a == 0.) {
   //   discard;
   // }
   color *= 1.0 - random(uv * 3. + 100. + uTime * 1.) * 0.8;
-  a *= smoothstep(1.45, 1.55, length(vWorldPosition.xz));
+  a *= smoothstep(1.3, 1.4, length(vWorldPosition.xz));
   color *= a;
 
   // color = 1. - mapColor.rgb * 0.5 * (1. - dp);

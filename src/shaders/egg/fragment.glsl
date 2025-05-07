@@ -11,6 +11,7 @@ uniform float uTime;
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vWorldPosition;
+varying vec3 vPos;
 
 void main() {
 
@@ -27,14 +28,12 @@ void main() {
   // vec3 lightColor = vec3(0.4,0.8,0.9) * 0.7;
   light += dirLight(lightColor,1.,lightDir, n, -viewDir, 20.);
 
-  
-
   vec3 baseColor = vec3(1.);
 
   // noise
-  float t = fbm(pos * 10., 3);
-  float t2 = fbm(pos * 100., 3);
-  float t3 = fbm(pos * 5., 2);
+  float t = fbm(vPos * 10., 3);
+  float t2 = fbm(vPos * 100., 3);
+  float t3 = fbm(vPos * 5., 2);
   // float t4 = fbm(pos * 5., 2);
   baseColor *= 1.2 - t * 0.3 + t2 * 0.3;
 
@@ -46,12 +45,13 @@ void main() {
 
   // glitter
   float dp = max(0.0,0.8 + dot(n,lightDir));
-  float g = cnoise(vec4(pos * 40. , uTime * 10.)) * 0.5 + 0.5;
-  g = pow(g,19.);
+  float g = cnoise(vec4(pos * (40.) , uTime * 10.)) * 0.5 + 0.5;
+  g += 
+  g = pow(g,22. - smoothstep(5.,10.,length(cameraPosition)) * 5.);
   g *= dp;
 
   vec3 color = baseColor * light;
-  color *= 1.0 + g * 5.;
+  color *= 1.0 + g * 3.;
 
   // color *= 1. - random(pos + 100.) * 0.25;
   gl_FragColor = vec4(color,1.0);

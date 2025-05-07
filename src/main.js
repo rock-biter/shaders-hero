@@ -19,7 +19,7 @@ const textureLoader = new THREE.TextureLoader()
  */
 // __gui__
 const config = {
-	size: 1800,
+	size: 1750,
 }
 const pane = new Pane()
 
@@ -65,10 +65,10 @@ const sizes = {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(3.5, 2.5, 3.5)
+camera.position.set(-1, 3, 3.5)
 camera.lookAt(new THREE.Vector3(2, 2.5, 0))
 
-const eggG = new THREE.SphereGeometry(0.7, 32, 32)
+const eggG = new THREE.SphereGeometry(0.5, 32, 32)
 eggG.scale(1, 1, 1)
 // eggG.computeVertexNormals()
 const eggMat = new THREE.ShaderMaterial({
@@ -79,10 +79,10 @@ const eggMat = new THREE.ShaderMaterial({
 		uTime: { value: 0 },
 	},
 })
-const sphere = new THREE.Mesh(eggG, eggMat)
-sphere.scale.y = 1.3
-sphere.position.y = 0.5
-scene.add(sphere)
+const egg = new THREE.Mesh(eggG, eggMat)
+egg.scale.y = 1.3
+egg.position.y = 0.5
+scene.add(egg)
 // const light = new THREE.DirectionalLight(0xffffff, 1.5)
 // const light2 = new THREE.HemisphereLight(0x555555, 0x992233, 2)
 // light.position.set(0.7, 2, 0.1)
@@ -192,7 +192,7 @@ const particlesMaterial = new THREE.ShaderMaterial({
 const boxGeometry = new THREE.BoxGeometry(10, 10, 10, 5, 5, 5)
 const sphereGeometry = new THREE.SphereGeometry(5, 12, 24)
 const particlesGeometry = new THREE.BufferGeometry()
-const count = 700
+const count = 550
 const position = new Float32Array(count * 3)
 const color = new Float32Array(count * 3)
 const random = new Float32Array(count)
@@ -236,7 +236,7 @@ handleResize()
 // __controls__
 const controls = new OrbitControls(camera, renderer.domElement)
 controls.enableDamping = true
-controls.autoRotate = true
+// controls.autoRotate = true
 controls.rotateSpeed = 0.5
 controls.target.set(0, 0.5, 0)
 
