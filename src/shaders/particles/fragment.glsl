@@ -74,7 +74,7 @@ void main() {
   // if(a == 0.) {
   //   discard;
   // }
-  color *= 1.0 - random(uv * 3. + 100. + uTime * 1.) * 0.8;
+  color *= 1.0 - random(uv * 3. + 100. + uTime * 1.) * 0.5;
   a *= smoothstep(1.3, 1.4, length(vWorldPosition.xz));
   color *= a;
 
