@@ -10,6 +10,9 @@ import fragmentShader from './shaders/card/fragment.glsl'
 import fireVertexShader from './shaders/fire/vertex.glsl'
 import fireFragmentShader from './shaders/fire/fragment.glsl'
 
+import particlesVert from './shaders/particles/vertex.glsl'
+import particlesFrag from './shaders/particles/fragment.glsl'
+
 const loadingManager = new THREE.LoadingManager()
 const textureLoader = new THREE.TextureLoader(loadingManager)
 
@@ -49,6 +52,13 @@ const config = {
 		baseEnd: 0.35,
 		topFrequency: 30,
 		topAmplitude: 0.1,
+	},
+	particles: {
+		size: 5,
+		speed: 1,
+		divergence: 10,
+		divergenceFreq: new THREE.Vector2(1, 1),
+		divergenceAmp: 2,
 	},
 }
 
@@ -201,141 +211,207 @@ pane
 		})
 }
 
-const fire = pane.addFolder({ title: 'Fire', expanded: true })
+{
+	const fire = pane.addFolder({ title: 'Fire', expanded: false })
 
-fire.addBinding(config.fire, 'wireframe').on('change', (ev) => {
-	fireMaterial.wireframe = ev.value
-})
-
-fire
-	.addBinding(config.fire, 'frequency', {
-		min: 0.01,
-		max: 10,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		fireMaterial.uniforms.uFireFrequency.value = ev.value
+	fire.addBinding(config.fire, 'wireframe').on('change', (ev) => {
+		fireMaterial.wireframe = ev.value
 	})
 
-fire
-	.addBinding(config.fire, 'amplitude', {
-		min: 0,
-		max: 3,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		fireMaterial.uniforms.uFireAmplitude.value = ev.value
+	fire
+		.addBinding(config.fire, 'frequency', {
+			min: 0.01,
+			max: 10,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uFireFrequency.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'amplitude', {
+			min: 0,
+			max: 3,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uFireAmplitude.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'expAmplitude', {
+			min: 0,
+			max: 10,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uFireExpAmplitude.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'fallinOffset', {
+			min: -1,
+			max: 1,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uFireFallinOffset.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'fallinMargin', {
+			min: 0,
+			max: 1,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uFireFallinMargin.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'falloffOffset', {
+			min: -1,
+			max: 1,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uFireFalloffOffset.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'falloffMargin', {
+			min: 0,
+			max: 1,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uFireFalloffMargin.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'baseFrequency', {
+			min: 0,
+			max: 50,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uBaseFrequency.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'baseAmplitude', {
+			min: 0,
+			max: 50,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uBaseAmplitude.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'baseStart', {
+			min: -1,
+			max: 1,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uBaseStart.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'baseEnd', {
+			min: -1,
+			max: 3,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uBaseEnd.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'topFrequency', {
+			min: 0,
+			max: 50,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uTopFrequency.value = ev.value
+		})
+
+	fire
+		.addBinding(config.fire, 'topAmplitude', {
+			min: 0,
+			max: 50,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			fireMaterial.uniforms.uTopAmplitude.value = ev.value
+		})
+}
+
+{
+	const particles = pane.addFolder({
+		title: 'Particles',
+		expanded: true,
 	})
 
-fire
-	.addBinding(config.fire, 'expAmplitude', {
-		min: 0,
-		max: 10,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		fireMaterial.uniforms.uFireExpAmplitude.value = ev.value
-	})
+	particles
+		.addBinding(config.particles, 'size', {
+			min: 1,
+			max: 10,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			particlesMat.uniforms.uSize.value = ev.value * renderer.getPixelRatio()
+		})
 
-fire
-	.addBinding(config.fire, 'fallinOffset', {
-		min: -1,
-		max: 1,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		fireMaterial.uniforms.uFireFallinOffset.value = ev.value
-	})
+	particles
+		.addBinding(config.particles, 'speed', {
+			min: 0,
+			max: 10,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			particlesMat.uniforms.uSpeed.value = ev.value
+		})
 
-fire
-	.addBinding(config.fire, 'fallinMargin', {
-		min: 0,
-		max: 1,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		fireMaterial.uniforms.uFireFallinMargin.value = ev.value
-	})
+	particles
+		.addBinding(config.particles, 'divergence', {
+			min: 0,
+			max: 10,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			particlesMat.uniforms.uDivergence.value = ev.value
+		})
 
-fire
-	.addBinding(config.fire, 'falloffOffset', {
-		min: -1,
-		max: 1,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		fireMaterial.uniforms.uFireFalloffOffset.value = ev.value
-	})
+	particles
+		.addBinding(config.particles, 'divergenceAmp', {
+			min: 0,
+			max: 5,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			particlesMat.uniforms.uDivergenceAmp.value = ev.value
+		})
 
-fire
-	.addBinding(config.fire, 'falloffMargin', {
-		min: 0,
-		max: 1,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		fireMaterial.uniforms.uFireFalloffMargin.value = ev.value
-	})
-
-fire
-	.addBinding(config.fire, 'baseFrequency', {
-		min: 0,
-		max: 50,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		fireMaterial.uniforms.uBaseFrequency.value = ev.value
-	})
-
-fire
-	.addBinding(config.fire, 'baseAmplitude', {
-		min: 0,
-		max: 50,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		fireMaterial.uniforms.uBaseAmplitude.value = ev.value
-	})
-
-fire
-	.addBinding(config.fire, 'baseStart', {
-		min: -1,
-		max: 1,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		fireMaterial.uniforms.uBaseStart.value = ev.value
-	})
-
-fire
-	.addBinding(config.fire, 'baseEnd', {
-		min: -1,
-		max: 3,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		fireMaterial.uniforms.uBaseEnd.value = ev.value
-	})
-
-fire
-	.addBinding(config.fire, 'topFrequency', {
-		min: 0,
-		max: 50,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		fireMaterial.uniforms.uTopFrequency.value = ev.value
-	})
-
-fire
-	.addBinding(config.fire, 'topAmplitude', {
-		min: 0,
-		max: 50,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		fireMaterial.uniforms.uTopAmplitude.value = ev.value
-	})
+	particles
+		.addBinding(config.particles, 'divergenceFreq', {
+			x: {
+				min: 0.01,
+				max: 3,
+				step: 0.01,
+			},
+			y: {
+				min: 0.01,
+				max: 3,
+				step: 0.01,
+			},
+		})
+		.on('change', (ev) => {
+			// particlesMat.uniforms.uDivergenceF.value = ev.value
+		})
+}
 /**
  * Scene
  */
@@ -390,6 +466,7 @@ const fireMaterial = new THREE.ShaderMaterial({
 		...globalUniforms,
 		uFireColor: cardMaterial.uniforms.uFireColor,
 		uFireScale: cardMaterial.uniforms.uFireScale,
+		uAmplitude: cardMaterial.uniforms.uBurnColor,
 		uFrequency: cardMaterial.uniforms.uFrequency,
 		uAmplitude: cardMaterial.uniforms.uAmplitude,
 		uFireFrequency: {
@@ -425,6 +502,31 @@ const fireMaterial = new THREE.ShaderMaterial({
 	},
 })
 
+const particlesMat = new THREE.ShaderMaterial({
+	vertexShader: particlesVert,
+	fragmentShader: particlesFrag,
+	uniforms: {
+		...globalUniforms,
+		uSize: { value: config.particles.size },
+		uSpeed: { value: config.particles.speed },
+		uDivergence: { value: config.particles.divergence },
+		uDivergenceExp: { value: config.particles.divergenceExp },
+		uDivergenceFreq: { value: config.particles.divergenceFreq },
+		uDivergenceAmp: { value: config.particles.divergenceAmp },
+		uVelocity: fireMaterial.uniforms.uVelocity,
+		uResolution: {
+			value: new THREE.Vector2(0, 0),
+		},
+		uFireColor: cardMaterial.uniforms.uFireColor,
+		uFireScale: cardMaterial.uniforms.uFireScale,
+		uFrequency: cardMaterial.uniforms.uFrequency,
+		uAmplitude: cardMaterial.uniforms.uAmplitude,
+	},
+	depthWrite: false,
+	blending: THREE.AdditiveBlending,
+	transparent: true,
+})
+
 // plane
 const frontMap = textureLoader.load('/textures/charizard.png')
 const backMap = textureLoader.load('/textures/backside.png')
@@ -447,6 +549,42 @@ loadingManager.onLoad = () => {
 	const fire = new THREE.Mesh(fireGeometry, fireMaterial)
 	fire.position.z = 0.001
 	scene.add(card, fire)
+
+	/**
+	 * PARTICLES
+	 */
+	// const count =
+
+	const particlesSamplerGeometry = new THREE.PlaneGeometry(
+		2,
+		2 / aspect,
+		50,
+		100
+	)
+	const position = particlesSamplerGeometry.getAttribute('position').clone()
+	const uv = particlesSamplerGeometry.getAttribute('uv').clone()
+	const count = position.count
+	const random = new Float32Array(count)
+	const life = new Float32Array(count)
+
+	for (let i = 0; i < count; i++) {
+		random[i] = Math.random()
+		life[i] = 0.3 + Math.random() > 0.8 ? Math.random() * 3 : Math.random() * 1
+	}
+
+	const particlesGeom = new THREE.BufferGeometry()
+	particlesGeom.setAttribute('position', position)
+	particlesGeom.setAttribute('uv', uv)
+	particlesGeom.setAttribute('aRandom', new THREE.BufferAttribute(random, 1))
+	particlesGeom.setAttribute('aLife', new THREE.BufferAttribute(life, 1))
+
+	particlesMat.uniforms.uMap = {
+		value: frontMap,
+	}
+
+	const particles = new THREE.Points(particlesGeom, particlesMat)
+	particles.position.z = 0.005
+	scene.add(particles)
 }
 
 /**
@@ -454,7 +592,7 @@ loadingManager.onLoad = () => {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(1, 2, 4)
+camera.position.set(2, -1.5, 4)
 camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 
 /**
@@ -558,4 +696,8 @@ function handleResize() {
 
 	const pixelRatio = Math.min(window.devicePixelRatio, 2)
 	renderer.setPixelRatio(pixelRatio)
+
+	particlesMat.uniforms.uResolution.value.set(sizes.width, sizes.height)
+	particlesMat.uniforms.uSize.value =
+		config.particles.size * renderer.getPixelRatio()
 }
