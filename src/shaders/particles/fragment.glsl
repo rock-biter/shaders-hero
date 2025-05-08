@@ -54,8 +54,8 @@ void main() {
   vec3 lightDir = normalize(vec3(1.,2.,0.5));
   vec3 lightColor = vec3(0.7,0.4,0.1);
   // vec3 lightColor = vec3(0.4,0.8,0.9) * 0.7;
-  light += dirLight(lightColor,0.4,lightDir, n, -viewDir, 1. + vRandom * 2.);
-  // light += pointLight(vec3(1.,0.2,0.01), 0.5, vec3(-3., -4., 5.), vWorldPosition, n, 10., -viewDir, 20.);
+  light += dirLight(lightColor,0.3,lightDir, n, -viewDir, 1. + vRandom * 2.);
+  light += pointLight(vec3(1.), 0.2, vec3(0.,0,0), vWorldPosition, n, 10., -viewDir, 800.);
 
   // float dp = clamp(+ 0.8 + dot(lightDir, n),0.0,0.7);
   float dp = clamp(length(light) * 1., 0.75, 0.99);

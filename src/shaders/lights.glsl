@@ -131,9 +131,10 @@ vec3 pointLight(vec3 lightColor, float intensity, vec3 lightPosition, vec3 posit
   #ifdef TOON
     specular = toonify(specular, 0.05, decay);
     diffuse = toonify(normal, dir, 0.05, float(TOON), decay);
+    decay = 1.0;
   #endif
 
-  vec3 light = (diffuse + specular * 0.) * intensity * lightColor;
+  vec3 light = (diffuse + specular * 1.) * intensity * lightColor * decay;
 
   return light;
 
