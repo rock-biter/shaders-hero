@@ -23,7 +23,7 @@ void main() {
 
   vec2 uv = vec2(vUv);
   vec4 mapColor = texture(uMap, uv);
-  vec3 color = mapColor.rgb;
+  vec3 color = uFireColor * 0.4 + mapColor.rgb * 0.6;
   float a = mapColor.a;
   vec2 pointUV = gl_PointCoord;
   pointUV.y = 1.0 - pointUV.y;
@@ -44,16 +44,11 @@ void main() {
   a *= fallin * falloff;
 
   // color scale
-  float colorBloom = 1. - smoothstep(0.,0.2 + vRandom * 0.3,vWorldPosition.z);
-  color += colorBloom * uFireColor * uFireScale * 1.;
+  float colorBloom = 1. - smoothstep(0.,vLife * 0.3 + vRandom * 0.2,vWorldPosition.z);
+  color += colorBloom * uFireScale * uFireColor;
 
-  float colorDark = smoothstep(vLife - vRandom * vLife * 0.5,vLife - 0.1,vWorldPosition.z);
-  // color *= colorDark;
-
-  color = mix(color, uBurnColor, pow(colorDark,2.));
-
-  // vec3 color = vec3(1.0);
-  // float a = 1.0;
+  float colorDark = smoothstep(vLife,vLife * 1.5,vWorldPosition.z);
+  // color = mix(color, uBurnColor, pow(colorDark,2.));
 
   gl_FragColor = vec4(color,a);
 }

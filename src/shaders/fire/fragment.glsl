@@ -46,18 +46,13 @@ void main() {
 
   color *= 1. - random(vWorldPosition.xy + uTime + 10.) * 0.3;
 
-
   a *= smoothstep(0.0,0.15,vUv.x);
   a *= 1. - smoothstep(0.85,1.,vUv.x);
   a *= smoothstep(0.0,0.25,vUv.y);
   a *= 1. - smoothstep(0.75,1.,vUv.y);
   a *= smoothstep(0.001,0.03, vHeight);
 
-  if(gl_FrontFacing == true) {
-    a *= inverseFresnel * 2.;
-  } else {
-    a *=  inverseFresnel * 2.;
-  }
+  a *=  inverseFresnel * 2.;
 
   gl_FragColor = vec4(color, a);
 }

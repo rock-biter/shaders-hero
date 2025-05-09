@@ -54,9 +54,8 @@ const config = {
 		topAmplitude: 0.1,
 	},
 	particles: {
-		size: 5,
-		speed: 1,
-		divergence: 10,
+		size: 7,
+		speed: 1.8,
 		divergenceFreq: new THREE.Vector2(1, 1),
 		divergenceAmp: 2,
 	},
@@ -376,16 +375,6 @@ pane
 		})
 
 	particles
-		.addBinding(config.particles, 'divergence', {
-			min: 0,
-			max: 10,
-			step: 0.01,
-		})
-		.on('change', (ev) => {
-			particlesMat.uniforms.uDivergence.value = ev.value
-		})
-
-	particles
 		.addBinding(config.particles, 'divergenceAmp', {
 			min: 0,
 			max: 5,
@@ -509,8 +498,6 @@ const particlesMat = new THREE.ShaderMaterial({
 		...globalUniforms,
 		uSize: { value: config.particles.size },
 		uSpeed: { value: config.particles.speed },
-		uDivergence: { value: config.particles.divergence },
-		uDivergenceExp: { value: config.particles.divergenceExp },
 		uDivergenceFreq: { value: config.particles.divergenceFreq },
 		uDivergenceAmp: { value: config.particles.divergenceAmp },
 		uVelocity: fireMaterial.uniforms.uVelocity,
@@ -558,8 +545,8 @@ loadingManager.onLoad = () => {
 	const particlesSamplerGeometry = new THREE.PlaneGeometry(
 		2,
 		2 / aspect,
-		60,
-		120
+		30,
+		60
 	)
 	const position = particlesSamplerGeometry.getAttribute('position').clone()
 	const uv = particlesSamplerGeometry.getAttribute('uv').clone()
@@ -583,7 +570,6 @@ loadingManager.onLoad = () => {
 	}
 
 	const particles = new THREE.Points(particlesGeom, particlesMat)
-	particles.position.z = 0.005
 	scene.add(particles)
 }
 
