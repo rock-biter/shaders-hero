@@ -52,7 +52,7 @@ void main() {
   a *= 1. - smoothstep(0.75,1.,vUv.y);
   a *= smoothstep(0.001,0.03, vHeight);
 
-  a *=  inverseFresnel * 2.;
+  a *=  inverseFresnel * 1.5;
 
   gl_FragColor = vec4(color, a);
 }
