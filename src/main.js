@@ -53,12 +53,6 @@ const config = {
 		topFrequency: 30,
 		topAmplitude: 0.1,
 	},
-	particles: {
-		size: 7,
-		speed: 1.8,
-		divergenceFreq: new THREE.Vector2(1, 1),
-		divergenceAmp: 2,
-	},
 }
 
 const globalUniforms = {
@@ -348,59 +342,6 @@ pane
 		})
 }
 
-{
-	const particles = pane.addFolder({
-		title: 'Particles',
-		expanded: true,
-	})
-
-	particles
-		.addBinding(config.particles, 'size', {
-			min: 1,
-			max: 10,
-			step: 0.01,
-		})
-		.on('change', (ev) => {
-			particlesMat.uniforms.uSize.value = ev.value * renderer.getPixelRatio()
-		})
-
-	particles
-		.addBinding(config.particles, 'speed', {
-			min: 0,
-			max: 10,
-			step: 0.01,
-		})
-		.on('change', (ev) => {
-			particlesMat.uniforms.uSpeed.value = ev.value
-		})
-
-	particles
-		.addBinding(config.particles, 'divergenceAmp', {
-			min: 0,
-			max: 5,
-			step: 0.01,
-		})
-		.on('change', (ev) => {
-			particlesMat.uniforms.uDivergenceAmp.value = ev.value
-		})
-
-	particles
-		.addBinding(config.particles, 'divergenceFreq', {
-			x: {
-				min: 0.01,
-				max: 3,
-				step: 0.01,
-			},
-			y: {
-				min: 0.01,
-				max: 3,
-				step: 0.01,
-			},
-		})
-		.on('change', (ev) => {
-			// particlesMat.uniforms.uDivergenceF.value = ev.value
-		})
-}
 /**
  * Scene
  */
@@ -491,29 +432,6 @@ const fireMaterial = new THREE.ShaderMaterial({
 	},
 })
 
-const particlesMat = new THREE.ShaderMaterial({
-	vertexShader: particlesVert,
-	fragmentShader: particlesFrag,
-	uniforms: {
-		...globalUniforms,
-		uSize: { value: config.particles.size },
-		uSpeed: { value: config.particles.speed },
-		uDivergenceFreq: { value: config.particles.divergenceFreq },
-		uDivergenceAmp: { value: config.particles.divergenceAmp },
-		uVelocity: fireMaterial.uniforms.uVelocity,
-		uResolution: {
-			value: new THREE.Vector2(0, 0),
-		},
-		uFireColor: cardMaterial.uniforms.uFireColor,
-		uFireScale: cardMaterial.uniforms.uFireScale,
-		uFrequency: cardMaterial.uniforms.uFrequency,
-		uAmplitude: cardMaterial.uniforms.uAmplitude,
-	},
-	depthWrite: false,
-	blending: THREE.AdditiveBlending,
-	transparent: true,
-})
-
 // plane
 const frontMap = textureLoader.load('/textures/charizard.png')
 const backMap = textureLoader.load('/textures/backside.png')
@@ -536,41 +454,6 @@ loadingManager.onLoad = () => {
 	const fire = new THREE.Mesh(fireGeometry, fireMaterial)
 	fire.position.z = 0.001
 	scene.add(card, fire)
-
-	/**
-	 * PARTICLES
-	 */
-	// const count =
-
-	const particlesSamplerGeometry = new THREE.PlaneGeometry(
-		2,
-		2 / aspect,
-		30,
-		60
-	)
-	const position = particlesSamplerGeometry.getAttribute('position').clone()
-	const uv = particlesSamplerGeometry.getAttribute('uv').clone()
-	const count = position.count
-	const random = new Float32Array(count)
-	const life = new Float32Array(count)
-
-	for (let i = 0; i < count; i++) {
-		random[i] = Math.random()
-		life[i] = 0.3 + Math.random() > 0.8 ? Math.random() * 3 : Math.random() * 1
-	}
-
-	const particlesGeom = new THREE.BufferGeometry()
-	particlesGeom.setAttribute('position', position)
-	particlesGeom.setAttribute('uv', uv)
-	particlesGeom.setAttribute('aRandom', new THREE.BufferAttribute(random, 1))
-	particlesGeom.setAttribute('aLife', new THREE.BufferAttribute(life, 1))
-
-	particlesMat.uniforms.uMap = {
-		value: frontMap,
-	}
-
-	const particles = new THREE.Points(particlesGeom, particlesMat)
-	scene.add(particles)
 }
 
 /**
@@ -683,8 +566,4 @@ function handleResize() {
 
 	const pixelRatio = Math.min(window.devicePixelRatio, 2)
 	renderer.setPixelRatio(pixelRatio)
-
-	particlesMat.uniforms.uResolution.value.set(sizes.width, sizes.height)
-	particlesMat.uniforms.uSize.value =
-		config.particles.size * renderer.getPixelRatio()
 }
