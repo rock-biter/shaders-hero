@@ -10,9 +10,6 @@ import fragmentShader from './shaders/card/fragment.glsl'
 import fireVertexShader from './shaders/fire/vertex.glsl'
 import fireFragmentShader from './shaders/fire/fragment.glsl'
 
-import particlesVert from './shaders/particles/vertex.glsl'
-import particlesFrag from './shaders/particles/fragment.glsl'
-
 const loadingManager = new THREE.LoadingManager()
 const textureLoader = new THREE.TextureLoader(loadingManager)
 
@@ -532,9 +529,8 @@ function tic() {
 	 * tempo totale trascorso dall'inizio
 	 */
 
-	prevPointer.lerp(pointer, deltaTime * 5)
-	const v = pointer.clone().sub(prevPointer)
-	velocity.lerp(v, deltaTime * 2)
+	prevPointer.lerp(pointer, deltaTime * 3)
+	velocity.copy(pointer).sub(prevPointer)
 
 	// console.log(velocity.x)
 

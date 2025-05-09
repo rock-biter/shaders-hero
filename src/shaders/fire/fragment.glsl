@@ -42,7 +42,7 @@ void main() {
   float topNoise = noise(vec3(vWorldPosition.xy * uTopFrequency, uTime * 10.)) * uTopAmplitude;
   float topFalloff = 1. + pow(vHeight + topNoise,2.) * uFireScale * 3.;
 
-  color *= topFalloff * inverseFresnel * 2.;
+  color *= topFalloff * inverseFresnel * 2. ;
 
   color *= 1. - random(vWorldPosition.xy + uTime + 10.) * 0.3;
 
@@ -52,7 +52,7 @@ void main() {
   a *= 1. - smoothstep(0.75,1.,vUv.y);
   a *= smoothstep(0.001,0.03, vHeight);
 
-  a *=  inverseFresnel * 1.5;
+  a *= inverseFresnel * 1.5;
 
   gl_FragColor = vec4(color, a);
 }
