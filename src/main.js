@@ -558,8 +558,8 @@ loadingManager.onLoad = () => {
 	const particlesSamplerGeometry = new THREE.PlaneGeometry(
 		2,
 		2 / aspect,
-		200,
-		400
+		60,
+		120
 	)
 	const position = particlesSamplerGeometry.getAttribute('position').clone()
 	const uv = particlesSamplerGeometry.getAttribute('uv').clone()
