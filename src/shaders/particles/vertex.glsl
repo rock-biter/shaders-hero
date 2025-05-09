@@ -44,7 +44,7 @@ void main() {
 
   wPos.y += pow(wPos.z, 2.) * 0.3;
 
-  wPos.x -= clamp(uVelocity.x, -0.1, 0.1) * pow(wPos.z,2.) * 2.5;
+  wPos.x -= clamp(uVelocity.x, -0.1, 0.1) * pow(wPos.z,2.) * 4.5;
 
   vWorldPosition = wPos.xyz;
 

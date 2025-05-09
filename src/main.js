@@ -558,8 +558,8 @@ loadingManager.onLoad = () => {
 	const particlesSamplerGeometry = new THREE.PlaneGeometry(
 		2,
 		2 / aspect,
-		50,
-		100
+		200,
+		400
 	)
 	const position = particlesSamplerGeometry.getAttribute('position').clone()
 	const uv = particlesSamplerGeometry.getAttribute('uv').clone()
@@ -663,8 +663,9 @@ function tic() {
 	 * tempo totale trascorso dall'inizio
 	 */
 
-	prevPointer.lerp(pointer, deltaTime * 3)
-	velocity.copy(pointer).sub(prevPointer)
+	prevPointer.lerp(pointer, deltaTime * 5)
+	const v = pointer.clone().sub(prevPointer)
+	velocity.lerp(v, deltaTime * 2)
 
 	// console.log(velocity.x)
 
