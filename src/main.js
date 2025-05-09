@@ -578,7 +578,7 @@ loadingManager.onLoad = () => {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(2, -1.5, 4)
+camera.position.set(1.7, -1.1, 2.8)
 camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 
 /**
