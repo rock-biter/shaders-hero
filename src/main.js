@@ -7,11 +7,6 @@ import { Pane } from 'tweakpane'
 import particlesFragmentShader from './shaders/particles/fragment.glsl'
 import particlesVertexShader from './shaders/particles/vertex.glsl'
 
-const textureLoader = new THREE.TextureLoader()
-const perlin = textureLoader.load('/textures/perlin-rgba.png')
-perlin.wrapS = THREE.RepeatWrapping
-perlin.wrapT = THREE.RepeatWrapping
-
 const mouse = new THREE.Vector2()
 
 window.addEventListener('mousemove', (event) => {
@@ -116,8 +111,6 @@ for (let i = 0; i < count; i++) {
 particlesGeom.setAttribute('position', new THREE.BufferAttribute(position, 3))
 particlesGeom.setAttribute('aRandom', new THREE.BufferAttribute(random, 1))
 
-const particleShape = textureLoader.load('/textures/particles/star.png')
-
 const pointsMaterial = new THREE.ShaderMaterial({
 	vertexShader: particlesVertexShader,
 	fragmentShader: particlesFragmentShader,
@@ -125,9 +118,6 @@ const pointsMaterial = new THREE.ShaderMaterial({
 	depthWrite: false,
 	blending: THREE.AdditiveBlending,
 	uniforms: {
-		uMap: {
-			value: particleShape,
-		},
 		uSize: {
 			value: config.particles.size,
 		},
