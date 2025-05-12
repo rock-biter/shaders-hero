@@ -10,6 +10,9 @@ import fragmentShader from './shaders/card/fragment.glsl'
 import fireVertexShader from './shaders/fire/vertex.glsl'
 import fireFragmentShader from './shaders/fire/fragment.glsl'
 
+import particlesVertexShader from './shaders/particles/vertex.glsl'
+import particlesFragmentShader from './shaders/particles/fragment.glsl'
+
 const loadingManager = new THREE.LoadingManager()
 const textureLoader = new THREE.TextureLoader(loadingManager)
 
@@ -49,6 +52,12 @@ const config = {
 		baseEnd: 0.35,
 		topFrequency: 30,
 		topAmplitude: 0.1,
+	},
+	particles: {
+		size: 5,
+		speed: 1,
+		divergenceFreq: new THREE.Vector2(1, 1),
+		divergenceAmp: 2,
 	},
 }
 
@@ -339,6 +348,53 @@ pane
 		})
 }
 
+{
+	const particles = pane.addFolder({ title: 'Particles', expanded: true })
+
+	particles
+		.addBinding(config.particles, 'size', {
+			min: 0,
+			max: 15,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			particlesMaterial.uniforms.uSize.value = ev.value
+		})
+
+	particles
+		.addBinding(config.particles, 'speed', {
+			min: 0,
+			max: 5,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			particlesMaterial.uniforms.uSpeed.value = ev.value
+		})
+
+	particles
+		.addBinding(config.particles, 'divergenceAmp', {
+			min: 0,
+			max: 5,
+			step: 0.01,
+		})
+		.on('change', (ev) => {
+			particlesMaterial.uniforms.uDivergenceAmp.value = ev.value
+		})
+
+	particles.addBinding(config.particles, 'divergenceFreq', {
+		x: {
+			min: 0.01,
+			max: 3,
+			step: 0.01,
+		},
+		y: {
+			min: 0.01,
+			max: 3,
+			step: 0.01,
+		},
+	})
+}
+
 /**
  * Scene
  */
@@ -429,6 +485,28 @@ const fireMaterial = new THREE.ShaderMaterial({
 	},
 })
 
+const particlesMaterial = new THREE.ShaderMaterial({
+	vertexShader: particlesVertexShader,
+	fragmentShader: particlesFragmentShader,
+	uniforms: {
+		...globalUniforms,
+		uFrequency: cardMaterial.uniforms.uFrequency,
+		uAmplitude: cardMaterial.uniforms.uAmplitude,
+		uFireColor: cardMaterial.uniforms.uFireColor,
+		uFireScale: cardMaterial.uniforms.uFireScale,
+		uBurnColor: cardMaterial.uniforms.uBurnColor,
+		uVelocity: fireMaterial.uniforms.uVelocity,
+		uSize: { value: config.particles.size },
+		uSpeed: { value: config.particles.speed },
+		uDivergenceAmp: { value: config.particles.divergenceAmp },
+		uDivergenceFreq: { value: config.particles.divergenceFreq },
+		uResolution: { value: new THREE.Vector2(sizes.width, sizes.height) },
+	},
+	depthWrite: false,
+	transparent: true,
+	blending: THREE.AdditiveBlending,
+})
+
 // plane
 const frontMap = textureLoader.load('/textures/charizard.png')
 const backMap = textureLoader.load('/textures/backside.png')
@@ -451,6 +529,39 @@ loadingManager.onLoad = () => {
 	const fire = new THREE.Mesh(fireGeometry, fireMaterial)
 	fire.position.z = 0.001
 	scene.add(card, fire)
+
+	// particles
+	const tempGeometry = new THREE.PlaneGeometry(2, 2 / aspect, 40, 80)
+	const position = tempGeometry.getAttribute('position')
+	const uv = tempGeometry.getAttribute('uv')
+	const count = position.count
+	const random = new Float32Array(count * 3)
+	const life = new Float32Array(count)
+
+	for (let i = 0; i < count; i++) {
+		random[i * 3 + 0] = Math.random()
+		random[i * 3 + 1] = Math.random()
+		random[i * 3 + 2] = Math.random()
+
+		life[i] = 0.3 + Math.random() * 3
+	}
+
+	const particlesGeometry = new THREE.BufferGeometry()
+	particlesGeometry.setAttribute('position', position)
+	particlesGeometry.setAttribute('uv', uv)
+	particlesGeometry.setAttribute(
+		'aRandom',
+		new THREE.BufferAttribute(random, 3)
+	)
+	particlesGeometry.setAttribute('aLife', new THREE.BufferAttribute(life, 1))
+
+	particlesMaterial.uniforms.uMap = {
+		value: frontMap,
+	}
+
+	const particles = new THREE.Points(particlesGeometry, particlesMaterial)
+	// particles.position.z = 0.05
+	scene.add(particles)
 }
 
 /**
@@ -529,8 +640,9 @@ function tic() {
 	 * tempo totale trascorso dall'inizio
 	 */
 
-	prevPointer.lerp(pointer, deltaTime * 3)
-	velocity.copy(pointer).sub(prevPointer)
+	prevPointer.lerp(pointer, deltaTime * 5)
+	const v = pointer.clone().sub(prevPointer)
+	velocity.lerp(v, deltaTime * 2)
 
 	// console.log(velocity.x)
 
@@ -562,4 +674,8 @@ function handleResize() {
 
 	const pixelRatio = Math.min(window.devicePixelRatio, 2)
 	renderer.setPixelRatio(pixelRatio)
+
+	particlesMaterial.uniforms.uResolution.value.set(sizes.width, sizes.height)
+	particlesMaterial.uniforms.uSize.value =
+		config.particles.size * renderer.getPixelRatio()
 }
