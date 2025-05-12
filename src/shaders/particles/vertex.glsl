@@ -1,61 +1,57 @@
-attribute float aRandom;
+#include ../functions.glsl;
+#include ../perlin.glsl;
+#include ../fbm.glsl;
 
-uniform float uSize;
 uniform vec2 uResolution;
+uniform vec2 uPointer;
+uniform float uSize;
 uniform float uTime;
 uniform float uFrequency;
 uniform float uAmplitude;
-uniform vec3 uMouse;
 uniform float uSpeed;
+uniform float uDepth;
+uniform float uVelocity;
 
-varying float vRandom;
-varying float vDistance;
-varying float vSize;
-varying vec3 vWPos;
+varying float vAlpha;
 varying float vS;
 varying float vFog;
-varying float vMouseDistance;
-
-#include ../perlin.glsl;
-#include ../fbm.glsl;
-#include ../functions.glsl;
+varying vec3 vWPos;
+varying float vPointerDistance;
+varying float vR;
 
 void main() {
-  vRandom = aRandom;
+  vec4 wPos = modelMatrix * vec4(position,1.0);
+  float e = cnoise(wPos.xz * uFrequency + uTime * uSpeed) * uAmplitude;
+  wPos.y = e;
 
-  vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+  vAlpha = fbm(wPos.xz * uFrequency * 5. + uTime * uSpeed, 3);
 
-  float e = cnoise(worldPosition.xz * uFrequency + uTime * 0.1) * uAmplitude;
-  worldPosition.y += e;
+  vWPos = wPos.xyz;
 
-  vWPos = worldPosition.xyz;
-  float sizeScale = fbm(worldPosition.xz * uFrequency * 5. + uTime * 0.1,3);
-  // vSize = floor(sizeScale * 5.0) / 5.0 + 0.1;
-  vSize = sizeScale;
+  vec4 mvPos = viewMatrix * wPos;
 
-  vec4 mvPosition = viewMatrix * worldPosition;
-  gl_Position = projectionMatrix * mvPosition;
+  float d = mvPos.z;
+  float s = remap(abs(d + uDepth),0.,3.,1.,4.);
+  vS = remap(abs(d + uDepth),0.,3.,0.,0.4);
+  vFog = 1. - smoothstep(4.5, 7.5, -d);
 
-  float aspect = uResolution.x / uResolution.y;
-  vec2 aspectRatio = vec2(1.0);
-  float mouseDistance = 1. - distance(aspectRatio * gl_Position.xy / gl_Position.w  , aspectRatio * uMouse.xy);
-  // mouseDistance = pow(mouseDistance, 2.);
-  float t = smoothstep(0.6,1.0,mouseDistance + cnoise(mvPosition.xyz * 1.5 + uTime * 0.75) * 0.2);
+  gl_Position = projectionMatrix * mvPos;
 
-  vMouseDistance = mouseDistance;
+  vec2 aspect = uResolution.xy / uResolution.xx;
 
-  worldPosition.y += uSpeed * t * 0.25 * max(1.0 - pow(mouseDistance, 3.0) * 0.2, 0.0);
-  mvPosition = viewMatrix * worldPosition;
-  gl_Position = projectionMatrix * mvPosition;
+  float pointerDistance = distance(uPointer * aspect, aspect * gl_Position.xy / gl_Position.w);
+  float n = cnoise(wPos.xyz * 1.5 + uTime * 0.75) * 0.2;
+  float r = max(0.0,1.0 + mvPos.z * 0.1); 
+  float t = 1. - smoothstep(0.0, r, pointerDistance + n);
+  // float t2 = 1.0 - step(0.3, pointerDistance );
+  vR = r;
 
-  vDistance = mvPosition.z;
-  vS = remap(abs(vDistance + 3.),0.0,3.0,0.0,0.4);
-  vFog = remap(-vDistance,4.5, 7.5,1.0,0.0);
-  float s = remap(abs(vDistance + 3.),0.0,3.0,1.0,4.);
-  // s += mouseDistance * 2.;
+  vPointerDistance = pointerDistance;
 
-  gl_PointSize = s * uSize / - mvPosition.z;
+  wPos.y += t * 0.25 * uVelocity;
+  mvPos = viewMatrix * wPos;
+  gl_Position = projectionMatrix * mvPos;
+
+  gl_PointSize =  s * uSize / -mvPos.z;
   gl_PointSize *= 0.001 * uResolution.y;
-
-
 }

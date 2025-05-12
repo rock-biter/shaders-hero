@@ -1,45 +1,46 @@
-uniform sampler2D uMap;
-uniform float uTime;
-uniform float uSpeed;
-
-varying float vRandom;
-varying float vDistance;
-varying float vSize;
-varying vec3 vWPos;
-varying float vS;
-varying float vFog;
-varying float vMouseDistance;
-
 #include ../functions.glsl;
-#include ../noise.glsl;
 #include ../perlin.glsl;
 #include ../fbm.glsl;
 
-void main () {
+uniform vec3 uColorA;
+uniform vec3 uColorB;
+uniform float uTime;
+uniform float uVelocity;
+
+varying float vAlpha;
+varying float vS;
+varying float vFog;
+varying vec3 vWPos;
+varying float vPointerDistance;
+varying float vR;
+
+
+void main() {
+
   vec2 uv = gl_PointCoord;
+  uv.y = 1.0 - uv.y;
   uv -= 0.5;
   uv *= 2.0;
   float t = length(uv);
-  t = 1. - min(1.0 , smoothstep(0.6 - vS, 0.6 + vS, t));
 
-  float mDist = pow(vMouseDistance,3.);
+  float pDist = max(0.0, 1. - vPointerDistance);
+  pDist = pow(pDist, 3.);
+  pDist * vR;
 
-  vec3 color = vec3(0.0,0.2,0.95);
-  float n1 = fbm(vec3(vWPos.xz * (70.) + mDist * 30. * uSpeed, uTime * 0.5 * vWPos.y + cameraPosition.z * 2. + cameraPosition.x + cameraPosition.y * 4.),3) * 0.5 + 0.5;
-  // float n2 = random(vWPos.zx + time);
-  float glitter = pow(n1, 30.0 - mDist * 10. * uSpeed) * (20. + mDist * 20. * uSpeed); 
-  glitter *= vSize;
+  float n = fbm( vec3(vWPos.xz * 70., vWPos.y * 2. + uTime * 2. + cameraPosition.x + cameraPosition.y * 4. + cameraPosition.z * 2. + pDist * 50. * uVelocity ) ,3) * 0.5 + 0.5;
+  n = pow(n,30. - pDist * 10. * uVelocity) * (20. + pDist * 20. * uVelocity);
+  n *= vAlpha;
 
-  // float glitter = random(vWPos.xz + floor(uTime * 10.)) * 0.95;
-  color = mix(color, vec3(0.2,0.1,0.9),vSize);
-  color = mix(color, vec3(1.,0.3,0.2),clamp(pow(mDist,1.) * uSpeed * 1.5,0.0,1.0));
-  color = mix(color, vec3(1.0), glitter);
-  // color = mix(color, vec3(1.0), 5. * glitter * pow(vMouseDistance,2.));
-
-  // color = pow(color,vec3(glitter));
+  vec3 color = mix(uColorA, uColorB, vAlpha);
+  float tPointer = 1. - smoothstep(0.0,1.,vPointerDistance);
+  tPointer *= uVelocity;
+  color = mix(color, vec3(1.,0.3,0.2), clamp(tPointer,0.0,1.0));
+  color = mix(color, vec3(1.), n);
 
 
-  color = pow(color, vec3(1.0 / 2.2));
-  gl_FragColor = vec4(color ,t * vFog * vSize );
-  // gl_FragColor.a += glitter * 0.5;
+  float a = 1. - smoothstep(0.6 - vS, 0.6 + vS, t);
+  a *= vAlpha * vFog;
+
+  gl_FragColor = vec4(color,a);
+
 }
