@@ -12,6 +12,7 @@ varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vWorldPosition;
 varying vec3 vPos;
+varying vec3 vlPos;
 
 void main() {
 
@@ -47,7 +48,7 @@ void main() {
 
   // glitter
   float dp = max(0.0,0.8 + dot(n,lightDir));
-  float g = cnoise(vec4(pos * (40.) , uTime * 10.)) * 0.5 + 0.5;
+  float g = cnoise(vec4(vlPos * (40.) , pos.y * 2. + pos.x * 2. + pos.z * 2. + uTime * 2. - cameraPosition.x * 1. + cameraPosition.y * 2. + cameraPosition.z * 3.)) * 0.5 + 0.5;
   g += 
   g = pow(g,22. - smoothstep(5.,10.,length(cameraPosition)) * 5.);
   g *= dp;

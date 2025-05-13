@@ -4,6 +4,7 @@ varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vWorldPosition;
 varying vec3 vPos;
+varying vec3 vlPos;
 
 mat2 rotate(float angle) {
   float c = cos(angle);
@@ -13,6 +14,7 @@ mat2 rotate(float angle) {
 
 void main() {
   vUv = uv;
+  vlPos = position;
   vNormal = (modelMatrix * vec4(normal, 0.0)).xyz;
   float angle = - uTime * 0.3;
   mat2 rot = rotate(angle);

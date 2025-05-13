@@ -37,7 +37,6 @@ pane
  * Scene
  */
 const scene = new THREE.Scene()
-// scene.background = new THREE.Color(0xdedede)
 
 // __box__
 /**
@@ -45,12 +44,8 @@ const scene = new THREE.Scene()
  */
 
 // background della scena
-scene.background = new THREE.Color(1, 0.85, 0.59)
+// scene.background = new THREE.Color(1, 0.85, 0.59)
 // scene.background = new THREE.Color(0.1, 0.1, 0.2)
-
-pane.addBinding(scene, 'background', {
-	color: { type: 'float' },
-})
 
 /**
  * render sizes
@@ -125,7 +120,6 @@ const bgMat = new THREE.ShaderMaterial({
 		vec3 colorB = vec3(0.,0.03,0.05);
 		// color *= length(vUv);
 		float t = smoothstep(0.3,1.,vUv.y);
-		float s = smoothstep(1.,0.5,vUv.x);
 		color = mix(colorB, color,t * t * t);
 
 		gl_FragColor = vec4(color, 1.0);
@@ -154,21 +148,6 @@ document.body.appendChild(renderer.domElement)
 
 // const material = new THREE.MeshNormalMaterial()
 const map = textureLoader.load('/particles/smoke.png')
-// map.flipY = true
-// map.wrapS = THREE.RepeatWrapping
-// map.wrapT = THREE.RepeatWrapping
-const material = new THREE.PointsMaterial({
-	size: 2,
-	// color: new THREE.Color('orange'),
-	map: map,
-	transparent: true,
-	depthWrite: false,
-	blending: THREE.AdditiveBlending,
-	// blending: THREE.MultiplyBlending,
-	// blending: THREE.SubtractiveBlending,
-	vertexColors: true,
-	// sizeAttenuation: false,
-})
 
 const particlesMaterial = new THREE.ShaderMaterial({
 	vertexShader,
@@ -189,8 +168,7 @@ const particlesMaterial = new THREE.ShaderMaterial({
 	blendSrc: THREE.OneFactor,
 	blendDst: THREE.OneMinusSrcAlphaFactor,
 })
-const boxGeometry = new THREE.BoxGeometry(10, 10, 10, 5, 5, 5)
-const sphereGeometry = new THREE.SphereGeometry(5, 12, 24)
+
 const particlesGeometry = new THREE.BufferGeometry()
 const count = 550
 const position = new Float32Array(count * 3)
@@ -216,7 +194,6 @@ for (let i = 0; i < count; i++) {
 
 const posAttribute = new THREE.BufferAttribute(position, 3)
 particlesGeometry.setAttribute('position', posAttribute)
-// posAttribute.setUsage(THREE.DynamicDrawUsage)
 
 const colorAttribute = new THREE.BufferAttribute(color, 3)
 particlesGeometry.setAttribute('color', colorAttribute)
@@ -224,9 +201,9 @@ particlesGeometry.setAttribute('color', colorAttribute)
 const randomAttribute = new THREE.BufferAttribute(random, 1)
 particlesGeometry.setAttribute('aRandom', randomAttribute)
 
-const box = new THREE.Points(particlesGeometry, particlesMaterial)
+const cloud = new THREE.Points(particlesGeometry, particlesMaterial)
 
-scene.add(box)
+scene.add(cloud)
 
 handleResize()
 
@@ -259,18 +236,6 @@ function tic() {
 
 	particlesMaterial.uniforms.uTime.value = time
 	eggMat.uniforms.uTime.value = time
-	/**
-	 * tempo totale trascorso dall'inizio
-	 */
-	// const time = clock.getElapsedTime()
-	// for (let i = 0; i < posAttribute.count; i++) {
-	// 	const x = posAttribute.getX(i)
-	// 	const z = posAttribute.getZ(i)
-	// 	const y = Math.sin(z + time) * 0.5 + Math.cos(x + time) * 0.5
-	// 	posAttribute.setY(i, y)
-	// }
-
-	// posAttribute.needsUpdate = true
 
 	// __controls_update__
 	controls.update(deltaTime)

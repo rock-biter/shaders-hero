@@ -39,7 +39,6 @@ void main() {
   uv *= 2.;
 
   // uv = rotate(vRandom * 3.14159 * 0.5) * uv;
-
   vec3 n = vec3(uv, 0.0);
   float alpha = acos(length(uv));
   n.z = sin(alpha);
@@ -49,41 +48,25 @@ void main() {
 
   vec3 light = vec3(0.);
 
-  // light += hemiLight(vec3(0.3,0.1,0.2)*0.5,vec3(0.8,0.5,0.3), 0.5, n);
-  light += hemiLight(vec3(0.3,0.1,0.2)*0.5,vec3(0.8,0.5,0.3), 0.5, n);
+  light += hemiLight(vec3(0.3,0.1,0.2)*0.5,vec3(0.8,0.5,0.3), 0.4, n);
   vec3 lightDir = normalize(vec3(1.,2.,0.5));
   vec3 lightColor = vec3(0.7,0.4,0.1);
-  // vec3 lightColor = vec3(0.4,0.8,0.9) * 0.7;
   light += dirLight(lightColor,0.3,lightDir, n, -viewDir, 1. + vRandom * 2.);
   light += pointLight(vec3(1.), 0.2, vec3(0.,0,0), vWorldPosition, n, 10., -viewDir, 800.);
 
-  // float dp = clamp(+ 0.8 + dot(lightDir, n),0.0,0.7);
-  float dp = clamp(length(light) * 1., 0.75, 0.99);
+  float blend = remap(length(light) * 0.75,0.0,1.0, 0.25, 0.17);
 
   light = pow(light, vec3(3.0));
 
   vec3 color = vec3(1.0);
   color *= light;
 
-  float d = length(uv);
-  d = step(1.0,d);
-  float t = 1. - d;
-
-  // float a = t;
-  float a = mapColor.a * 1.5;
-  // if(a == 0.) {
-  //   discard;
-  // }
+  float a = pow(mapColor.a,0.8);
   color *= 1.0 - random(uv * 3. + 100. + uTime * 1.) * 0.5;
   a *= smoothstep(1.3, 1.4, length(vWorldPosition.xz));
   color *= a;
 
-  // color = 1. - mapColor.rgb * 0.5 * (1. - dp);
-  // color *= ;
-
-  a *= 1.0 - dp;
-  
-  // a *= 0.5;
+  a *= blend;
   
   gl_FragColor = vec4(color, a);
   #include <tonemapping_fragment>
