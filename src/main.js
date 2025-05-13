@@ -84,7 +84,7 @@ pane
 		particlesMaterial.uniforms.uAlphaExp.value = ev.value
 	})
 
-const eggFolder = pane.addFolder({ title: 'Egg', expanded: true })
+const eggFolder = pane.addFolder({ title: 'Egg', expanded: false })
 eggFolder.addBinding(config.egg, 'color', {
 	color: { type: 'float' },
 })
@@ -92,7 +92,7 @@ eggFolder.addBinding(config.egg, 'colorB', {
 	color: { type: 'float' },
 })
 
-pane
+eggFolder
 	.addBinding(config.egg, 'exposure', {
 		min: 0,
 		max: 10,
@@ -102,7 +102,7 @@ pane
 		eggMat.uniforms.uExposure.value = ev.value
 	})
 
-const hemi = pane.addFolder({ title: 'hemi light', expanded: true })
+const hemi = pane.addFolder({ title: 'hemi light', expanded: false })
 hemi.addBinding(config.hemiLight, 'skyColor', { color: { type: 'float' } })
 hemi.addBinding(config.hemiLight, 'groundColor', { color: { type: 'float' } })
 hemi
@@ -111,7 +111,7 @@ hemi
 		particlesMaterial.uniforms.uHemi.value.intensity = ev.value
 	})
 
-const dir = pane.addFolder({ title: 'directional light', expanded: true })
+const dir = pane.addFolder({ title: 'directional light', expanded: false })
 dir.addBinding(config.dirLight, 'color', { color: { type: 'float' } })
 dir
 	.addBinding(config.dirLight, 'intensity', { min: 0, max: 1, step: 0.01 })
@@ -124,7 +124,7 @@ dir.addBinding(config.dirLight, 'direction', {
 	z: { min: -3, max: 3, step: 0.01 },
 })
 
-const point = pane.addFolder({ title: 'point light', expanded: true })
+const point = pane.addFolder({ title: 'point light', expanded: false })
 point.addBinding(config.pointLight, 'color', { color: { type: 'float' } })
 point
 	.addBinding(config.pointLight, 'intensity', { min: 0, max: 1, step: 0.01 })
@@ -152,7 +152,7 @@ point
 		particlesMaterial.uniforms.uGlossiness.value = ev.value
 	})
 
-const blend = pane.addFolder({ title: 'Blending', expanded: true })
+const blend = pane.addFolder({ title: 'Blending', expanded: false })
 
 blend
 	.addBinding(config.blend, 'scale', {
