@@ -53,8 +53,9 @@ const config = {
 	},
 }
 const pane = new Pane()
+const particles = pane.addFolder({ title: 'particles', expanded: false })
 
-pane
+particles
 	.addBinding(config, 'size', {
 		min: 1200,
 		max: 2800,
@@ -64,7 +65,7 @@ pane
 		particlesMaterial.uniforms.uSize.value = ev.value * renderer.getPixelRatio()
 	})
 
-pane
+particles
 	.addBinding(config, 'radius', {
 		min: 0,
 		max: 4,
@@ -74,7 +75,7 @@ pane
 		particlesMaterial.uniforms.uRadius.value = ev.value
 	})
 
-pane
+particles
 	.addBinding(config.alpha, 'exp', {
 		min: 0,
 		max: 1,
