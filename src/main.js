@@ -9,9 +9,6 @@ import { Pane } from 'tweakpane'
 import vertexShader from './shaders/particles/vertex.glsl'
 import fragmentShader from './shaders/particles/fragment.glsl'
 
-import eggVert from './shaders/egg/vertex.glsl'
-import eggFrag from './shaders/egg/fragment.glsl'
-
 const textureLoader = new THREE.TextureLoader()
 
 /**
@@ -19,7 +16,7 @@ const textureLoader = new THREE.TextureLoader()
  */
 // __gui__
 const config = {
-	size: 1900,
+	size: 600,
 	hemiLight: {
 		skyColor: new THREE.Color(0.17, 0.03, 0.1),
 		groundColor: new THREE.Color(0.8, 0.5, 0.3),
@@ -42,65 +39,18 @@ const config = {
 		start: 0.25,
 		end: 0.17,
 	},
-	alpha: {
-		exp: 0.8,
-	},
-	radius: 1.3,
-	egg: {
-		color: new THREE.Color(1, 1, 0.9),
-		colorB: new THREE.Color(1, 0.6, 0.4),
-		exposure: 5,
-	},
 }
 const pane = new Pane()
-const particles = pane.addFolder({ title: 'particles', expanded: false })
+const particles = pane.addFolder({ title: 'particles', expanded: true })
 
 particles
 	.addBinding(config, 'size', {
-		min: 1200,
+		min: 500,
 		max: 2800,
 		step: 0.01,
 	})
 	.on('change', (ev) => {
-		particlesMaterial.uniforms.uSize.value = ev.value * renderer.getPixelRatio()
-	})
-
-particles
-	.addBinding(config, 'radius', {
-		min: 0,
-		max: 4,
-		step: 0.001,
-	})
-	.on('change', (ev) => {
-		particlesMaterial.uniforms.uRadius.value = ev.value
-	})
-
-particles
-	.addBinding(config.alpha, 'exp', {
-		min: 0,
-		max: 1,
-		step: 0.001,
-	})
-	.on('change', (ev) => {
-		particlesMaterial.uniforms.uAlphaExp.value = ev.value
-	})
-
-const eggFolder = pane.addFolder({ title: 'Egg', expanded: false })
-eggFolder.addBinding(config.egg, 'color', {
-	color: { type: 'float' },
-})
-eggFolder.addBinding(config.egg, 'colorB', {
-	color: { type: 'float' },
-})
-
-eggFolder
-	.addBinding(config.egg, 'exposure', {
-		min: 0,
-		max: 10,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		eggMat.uniforms.uExposure.value = ev.value
+		cloudMaterial.uniforms.uSize.value = ev.value * renderer.getPixelRatio()
 	})
 
 const hemi = pane.addFolder({ title: 'hemi light', expanded: false })
@@ -109,7 +59,7 @@ hemi.addBinding(config.hemiLight, 'groundColor', { color: { type: 'float' } })
 hemi
 	.addBinding(config.hemiLight, 'intensity', { min: 0, max: 1, step: 0.01 })
 	.on('change', (ev) => {
-		particlesMaterial.uniforms.uHemi.value.intensity = ev.value
+		cloudMaterial.uniforms.uHemi.value.intensity = ev.value
 	})
 
 const dir = pane.addFolder({ title: 'directional light', expanded: false })
@@ -117,7 +67,7 @@ dir.addBinding(config.dirLight, 'color', { color: { type: 'float' } })
 dir
 	.addBinding(config.dirLight, 'intensity', { min: 0, max: 1, step: 0.01 })
 	.on('change', (ev) => {
-		particlesMaterial.uniforms.uDirLight.value.intensity = ev.value
+		cloudMaterial.uniforms.uDirLight.value.intensity = ev.value
 	})
 dir.addBinding(config.dirLight, 'direction', {
 	x: { min: -3, max: 3, step: 0.01 },
@@ -130,7 +80,7 @@ point.addBinding(config.pointLight, 'color', { color: { type: 'float' } })
 point
 	.addBinding(config.pointLight, 'intensity', { min: 0, max: 1, step: 0.01 })
 	.on('change', (ev) => {
-		particlesMaterial.uniforms.uPointLight.value.intensity = ev.value
+		cloudMaterial.uniforms.uPointLight.value.intensity = ev.value
 	})
 point.addBinding(config.pointLight, 'position', {
 	x: { min: -3, max: 3, step: 0.01 },
@@ -140,7 +90,7 @@ point.addBinding(config.pointLight, 'position', {
 point
 	.addBinding(config.pointLight, 'maxDistance', { min: 0, max: 20, step: 0.01 })
 	.on('change', (ev) => {
-		particlesMaterial.uniforms.uPointLight.value.maxDistance = ev.value
+		cloudMaterial.uniforms.uPointLight.value.maxDistance = ev.value
 	})
 
 point
@@ -150,38 +100,7 @@ point
 		step: 0.01,
 	})
 	.on('change', (ev) => {
-		particlesMaterial.uniforms.uGlossiness.value = ev.value
-	})
-
-const blend = pane.addFolder({ title: 'Blending', expanded: false })
-
-blend
-	.addBinding(config.blend, 'scale', {
-		min: 0.0,
-		max: 2,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		particlesMaterial.uniforms.uBlend.value.scale = ev.value
-	})
-blend
-	.addBinding(config.blend, 'start', {
-		min: 0.0,
-		max: 1,
-		step: 0.001,
-	})
-	.on('change', (ev) => {
-		particlesMaterial.uniforms.uBlend.value.start = ev.value
-	})
-
-blend
-	.addBinding(config.blend, 'end', {
-		min: 0.0,
-		max: 1,
-		step: 0.001,
-	})
-	.on('change', (ev) => {
-		particlesMaterial.uniforms.uBlend.value.end = ev.value
+		cloudMaterial.uniforms.uGlossiness.value = ev.value
 	})
 
 /**
@@ -224,7 +143,7 @@ camera.lookAt(new THREE.Vector3(2, 2.5, 0))
  */
 // __helper_axes__
 const axesHelper = new THREE.AxesHelper(3)
-// scene.add(axesHelper)
+scene.add(axesHelper)
 
 const bgGeom = new THREE.BufferGeometry()
 bgGeom.setAttribute(
@@ -279,74 +198,21 @@ const renderer = new THREE.WebGLRenderer({
 })
 document.body.appendChild(renderer.domElement)
 
-// renderer.toneMapping = THREE.ACESFilmicToneMapping
-// renderer.toneMappingExposure = 2.5
-
-// const material = new THREE.MeshNormalMaterial()
-const map = textureLoader.load('/particles/smoke.png')
-
-const particlesMaterial = new THREE.ShaderMaterial({
+const cloudMaterial = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
 	transparent: true,
 	uniforms: {
-		uMap: { value: map },
 		uSize: { value: config.size * renderer.getPixelRatio() },
 		uResolution: { value: new THREE.Vector2(sizes.width, sizes.height) },
 		uTime: { value: 0 },
-		uHemi: {
-			value: {
-				intensity: config.hemiLight.intensity,
-				skyColor: config.hemiLight.skyColor,
-				groundColor: config.hemiLight.groundColor,
-			},
-		},
-		uDirLight: {
-			value: {
-				color: config.dirLight.color,
-				direction: config.dirLight.direction,
-				intensity: config.dirLight.intensity,
-			},
-		},
-		uPointLight: {
-			value: {
-				color: config.pointLight.color,
-				intensity: config.pointLight.intensity,
-				position: config.pointLight.position,
-				maxDistance: config.pointLight.maxDistance,
-			},
-		},
-		uGlossiness: {
-			value: config.pointLight.glossiness,
-		},
-		uRadius: {
-			value: config.radius,
-		},
-		uBlend: {
-			value: {
-				scale: config.blend.scale,
-				start: config.blend.start,
-				end: config.blend.end,
-			},
-		},
-		uAlphaExp: {
-			value: config.alpha.exp,
-		},
 	},
 	depthWrite: false,
-	// blending: THREE.AdditiveBlending,
-	// blending: THREE.MultiplyBlending,
-	// blending: THREE.SubtractiveBlending,
-	blending: THREE.CustomBlending,
-	blendEquation: THREE.AddEquation,
-	blendSrc: THREE.OneFactor,
-	blendDst: THREE.OneMinusSrcAlphaFactor,
 })
 
-const particlesGeometry = new THREE.BufferGeometry()
-const count = 550
+const cloudGeometry = new THREE.BufferGeometry()
+const count = 10
 const position = new Float32Array(count * 3)
-const color = new Float32Array(count * 3)
 const random = new Float32Array(count)
 
 for (let i = 0; i < count; i++) {
@@ -359,45 +225,19 @@ for (let i = 0; i < count; i++) {
 	position[index + 0] = x
 	position[index + 1] = y
 	position[index + 2] = z
-	color[index + 0] = Math.random()
-	color[index + 1] = Math.random()
-	color[index + 2] = Math.random()
 
 	random[index] = Math.random()
 }
 
 const posAttribute = new THREE.BufferAttribute(position, 3)
-particlesGeometry.setAttribute('position', posAttribute)
-
-const colorAttribute = new THREE.BufferAttribute(color, 3)
-particlesGeometry.setAttribute('color', colorAttribute)
+cloudGeometry.setAttribute('position', posAttribute)
 
 const randomAttribute = new THREE.BufferAttribute(random, 1)
-particlesGeometry.setAttribute('aRandom', randomAttribute)
+cloudGeometry.setAttribute('aRandom', randomAttribute)
 
-const cloud = new THREE.Points(particlesGeometry, particlesMaterial)
+const cloud = new THREE.Points(cloudGeometry, cloudMaterial)
 
 scene.add(cloud)
-
-const eggG = new THREE.SphereGeometry(0.5, 32, 32)
-eggG.scale(1, 1, 1)
-// eggG.computeVertexNormals()
-const eggMat = new THREE.ShaderMaterial({
-	vertexShader: eggVert,
-	fragmentShader: eggFrag,
-	uniforms: {
-		uColor: { value: config.egg.color },
-		uColorB: { value: config.egg.colorB },
-		uTime: { value: 0 },
-		uHemi: particlesMaterial.uniforms.uHemi,
-		uDirLight: particlesMaterial.uniforms.uDirLight,
-		uExposure: { value: config.egg.exposure },
-	},
-})
-const egg = new THREE.Mesh(eggG, eggMat)
-egg.scale.y = 1.3
-egg.position.y = 0.2
-scene.add(egg)
 
 handleResize()
 
@@ -408,8 +248,8 @@ handleResize()
 const controls = new OrbitControls(camera, renderer.domElement)
 controls.enableDamping = true
 // controls.autoRotate = true
-controls.rotateSpeed = 0.5
-controls.target.set(0, 0.3, 0)
+// controls.rotateSpeed = 0.5
+// controls.target.set(0, 0.4, 0)
 
 /**
  * Three js Clock
@@ -428,8 +268,7 @@ function tic() {
 	const deltaTime = clock.getDelta()
 	time += deltaTime
 
-	particlesMaterial.uniforms.uTime.value = time
-	eggMat.uniforms.uTime.value = time
+	cloudMaterial.uniforms.uTime.value = time
 
 	// __controls_update__
 	controls.update(deltaTime)
@@ -451,12 +290,11 @@ function handleResize() {
 
 	// camera.aspect = sizes.width / sizes.height;
 	camera.updateProjectionMatrix()
-	particlesMaterial.uniforms.uResolution.value.set(sizes.width, sizes.height)
+	cloudMaterial.uniforms.uResolution.value.set(sizes.width, sizes.height)
 
 	renderer.setSize(sizes.width, sizes.height)
 
 	const pixelRatio = Math.min(window.devicePixelRatio, 2)
 	renderer.setPixelRatio(pixelRatio)
-	particlesMaterial.uniforms.uSize.value =
-		config.size * renderer.getPixelRatio()
+	cloudMaterial.uniforms.uSize.value = config.size * renderer.getPixelRatio()
 }
