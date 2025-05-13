@@ -16,7 +16,9 @@ const textureLoader = new THREE.TextureLoader()
  */
 // __gui__
 const config = {
-	size: 600,
+	size: 1800,
+	minDistance: 2,
+	maxDistance: 6,
 	hemiLight: {
 		skyColor: new THREE.Color(0.17, 0.03, 0.1),
 		groundColor: new THREE.Color(0.8, 0.5, 0.3),
@@ -34,11 +36,6 @@ const config = {
 		maxDistance: 10,
 		glossiness: 700,
 	},
-	blend: {
-		scale: 0.75,
-		start: 0.25,
-		end: 0.17,
-	},
 }
 const pane = new Pane()
 const particles = pane.addFolder({ title: 'particles', expanded: true })
@@ -51,6 +48,26 @@ particles
 	})
 	.on('change', (ev) => {
 		cloudMaterial.uniforms.uSize.value = ev.value * renderer.getPixelRatio()
+	})
+
+particles
+	.addBinding(config, 'minDistance', {
+		min: 0,
+		max: 5,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		cloudMaterial.uniforms.uMinDistance.value = ev.value
+	})
+
+particles
+	.addBinding(config, 'maxDistance', {
+		min: 0,
+		max: 20,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		cloudMaterial.uniforms.uMaxDistance.value = ev.value
 	})
 
 const hemi = pane.addFolder({ title: 'hemi light', expanded: false })
@@ -113,10 +130,6 @@ const scene = new THREE.Scene()
  * BOX
  */
 
-// background della scena
-// scene.background = new THREE.Color(1, 0.85, 0.59)
-// scene.background = new THREE.Color(0.1, 0.1, 0.2)
-
 /**
  * render sizes
  */
@@ -132,11 +145,6 @@ const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
 camera.position.set(1, 2.2, 4)
 camera.lookAt(new THREE.Vector3(2, 2.5, 0))
-
-// const light = new THREE.DirectionalLight(0xffffff, 1.5)
-// const light2 = new THREE.HemisphereLight(0x555555, 0x992233, 2)
-// light.position.set(0.7, 2, 0.1)
-// scene.add(light, light2)
 
 /**
  * Show the axes of coordinates system
@@ -198,41 +206,75 @@ const renderer = new THREE.WebGLRenderer({
 })
 document.body.appendChild(renderer.domElement)
 
+const cloudMap = textureLoader.load('/particles/smoke.png')
+
 const cloudMaterial = new THREE.ShaderMaterial({
 	vertexShader,
 	fragmentShader,
 	transparent: true,
 	uniforms: {
+		uMap: { value: cloudMap },
 		uSize: { value: config.size * renderer.getPixelRatio() },
 		uResolution: { value: new THREE.Vector2(sizes.width, sizes.height) },
 		uTime: { value: 0 },
+		uMinDistance: {
+			value: config.minDistance,
+		},
+		uMaxDistance: {
+			value: config.maxDistance,
+		},
+		uHemi: {
+			value: {
+				intensity: config.hemiLight.intensity,
+				skyColor: config.hemiLight.skyColor,
+				groundColor: config.hemiLight.groundColor,
+			},
+		},
+		uDirLight: {
+			value: {
+				color: config.dirLight.color,
+				intensity: config.dirLight.intensity,
+				direction: config.dirLight.direction,
+			},
+		},
+		uPointLight: {
+			value: {
+				color: config.pointLight.color,
+				intensity: config.pointLight.intensity,
+				position: config.pointLight.position,
+				maxDistance: config.pointLight.maxDistance,
+			},
+		},
 	},
 	depthWrite: false,
+	// blending: THREE.AdditiveBlending,
 })
 
 const cloudGeometry = new THREE.BufferGeometry()
-const count = 10
+const count = 200
 const position = new Float32Array(count * 3)
-const random = new Float32Array(count)
+const random = new Float32Array(count * 3)
 
 for (let i = 0; i < count; i++) {
 	const index = i * 3
 	const dir = new THREE.Vector3().randomDirection()
-	const x = dir.x * Math.random() * 8
-	const y = (Math.random() - 0.5) * 2
-	const z = dir.z * Math.random() * 8
+	const x = dir.x * Math.random() * 4
+	const y = (Math.random() - 0.5) * 1
+	const z = dir.z * Math.random() * 4
 
 	position[index + 0] = x
 	position[index + 1] = y
 	position[index + 2] = z
 
-	random[index] = Math.random()
+	random[index + 0] = Math.random()
+	random[index + 1] = Math.random()
+	random[index + 2] = Math.random()
 }
 
 const posAttribute = new THREE.BufferAttribute(position, 3)
 cloudGeometry.setAttribute('position', posAttribute)
 
-const randomAttribute = new THREE.BufferAttribute(random, 1)
+const randomAttribute = new THREE.BufferAttribute(random, 3)
 cloudGeometry.setAttribute('aRandom', randomAttribute)
 
 const cloud = new THREE.Points(cloudGeometry, cloudMaterial)
@@ -290,11 +332,11 @@ function handleResize() {
 
 	// camera.aspect = sizes.width / sizes.height;
 	camera.updateProjectionMatrix()
-	cloudMaterial.uniforms.uResolution.value.set(sizes.width, sizes.height)
 
 	renderer.setSize(sizes.width, sizes.height)
 
 	const pixelRatio = Math.min(window.devicePixelRatio, 2)
 	renderer.setPixelRatio(pixelRatio)
 	cloudMaterial.uniforms.uSize.value = config.size * renderer.getPixelRatio()
+	cloudMaterial.uniforms.uResolution.value.set(sizes.width, sizes.height)
 }
