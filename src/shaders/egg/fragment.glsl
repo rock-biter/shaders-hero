@@ -27,14 +27,8 @@ void main() {
 
   vec3 light = vec3(0.);
 
-  // light += hemiLight(vec3(0.0,0.5,0.9),vec3(0.9,0.2,0.1), 0.3, n);
-  // light += hemiLight(vec3(0.0,0.5,0.9),vec3(0.1,0.01,0.1), 0.4, n); // old
   light += hemiLight(uHemi.skyColor,uHemi.groundColor, uHemi.intensity * 0.5, n);
-  vec3 lightDir = normalize(vec3(1.,2.,0.5));
-  vec3 lightColor = vec3(0.7,0.4,0.1);
-  // vec3 lightColor = vec3(0.4,0.8,0.9) * 0.7;
-  // light += dirLight(lightColor,1.,lightDir, n, -viewDir, 20.); // old
-  light += dirLight(uDirLight.color,uDirLight.intensity * 4.,uDirLight.direction, n, -viewDir, 20.);
+  light += dirLight(uDirLight.color,uDirLight.intensity,uDirLight.direction, n, -viewDir, 20.);
 
   light *= uExposure;
 
@@ -44,26 +38,21 @@ void main() {
   float t = fbm(vPos * 10., 3);
   float t2 = fbm(vPos * 100., 3);
   float t3 = fbm(vPos * 5., 2);
-  // float t4 = fbm(pos * 5., 2);
   baseColor *= 1.2 - t * 0.3 + t2 * 0.3;
 
   t3 = pow(t3,2.);
-  vec3 gold = uColorB;
 
-  // baseColor = mix(baseColor,vec3(0.9,0.1,0.0),pow(t4,5.));
-  baseColor = mix(baseColor,gold,t3);
+  baseColor = mix(baseColor,uColorB,t3);
 
   // glitter
-  float dp = max(0.0,0.8 + dot(n,lightDir));
-  float g = cnoise(vec4(vlPos * (40.) , pos.y * 2. + pos.x * 2. + pos.z * 2. + uTime * 2. - cameraPosition.x * 1. + cameraPosition.y * 2. + cameraPosition.z * 3.)) * 0.5 + 0.5;
-  g += 
-  g = pow(g,22. - smoothstep(5.,10.,length(cameraPosition)) * 5.);
+  float dp = max(0.0,0.8 + dot(n,uDirLight.direction));
+  float g = cnoise(vec4(vlPos * (50.) , pos.y * 2. + pos.x * 2. + pos.z * 2. + uTime * 4. - cameraPosition.x * 1. + cameraPosition.y * 2. + cameraPosition.z * 3.)) * 0.5 + 0.5;
+  g = pow(g,28.);
   g *= dp;
 
   vec3 color = baseColor * light;
-  color *= 1.0 + g * 3.;
+  color *= 1.0 + g * 10.;
 
-  // color *= 1. - random(pos + 100.) * 0.25;
   gl_FragColor = vec4(color,1.0);
 
   #include <tonemapping_fragment>

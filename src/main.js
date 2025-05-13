@@ -19,23 +19,23 @@ const textureLoader = new THREE.TextureLoader()
  */
 // __gui__
 const config = {
-	size: 1800,
+	size: 1900,
 	hemiLight: {
-		skyColor: new THREE.Color(0.15, 0.05, 0.1),
+		skyColor: new THREE.Color(0.17, 0.03, 0.1),
 		groundColor: new THREE.Color(0.8, 0.5, 0.3),
 		intensity: 0.4,
 	},
 	dirLight: {
-		color: new THREE.Color(0.7, 0.4, 0.1),
+		color: new THREE.Color(0.1, 0.37, 0.8),
 		intensity: 0.3,
 		direction: new THREE.Vector3(1, 2, 0.5),
 	},
 	pointLight: {
-		color: new THREE.Color(1, 1, 1),
-		intensity: 0.2,
+		color: new THREE.Color(1, 0.94, 0),
+		intensity: 0.3,
 		position: new THREE.Vector3(0, 0, 0),
 		maxDistance: 10,
-		glossiness: 800,
+		glossiness: 700,
 	},
 	blend: {
 		scale: 0.75,
@@ -49,7 +49,7 @@ const config = {
 	egg: {
 		color: new THREE.Color(1, 1, 0.9),
 		colorB: new THREE.Color(1, 0.6, 0.4),
-		exposure: 1.5,
+		exposure: 5,
 	},
 }
 const pane = new Pane()
@@ -95,7 +95,7 @@ eggFolder.addBinding(config.egg, 'colorB', {
 pane
 	.addBinding(config.egg, 'exposure', {
 		min: 0,
-		max: 5,
+		max: 10,
 		step: 0.01,
 	})
 	.on('change', (ev) => {
