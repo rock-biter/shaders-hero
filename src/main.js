@@ -20,6 +20,37 @@ const textureLoader = new THREE.TextureLoader()
 // __gui__
 const config = {
 	size: 1800,
+	hemiLight: {
+		skyColor: new THREE.Color(0.15, 0.05, 0.1),
+		groundColor: new THREE.Color(0.8, 0.5, 0.3),
+		intensity: 0.4,
+	},
+	dirLight: {
+		color: new THREE.Color(0.7, 0.4, 0.1),
+		intensity: 0.3,
+		direction: new THREE.Vector3(1, 2, 0.5),
+	},
+	pointLight: {
+		color: new THREE.Color(1, 1, 1),
+		intensity: 0.2,
+		position: new THREE.Vector3(0, 0, 0),
+		maxDistance: 10,
+		glossiness: 800,
+	},
+	blend: {
+		scale: 0.75,
+		start: 0.25,
+		end: 0.17,
+	},
+	alpha: {
+		exp: 0.8,
+	},
+	radius: 1.3,
+	egg: {
+		color: new THREE.Color(1, 1, 0.9),
+		colorB: new THREE.Color(1, 0.6, 0.4),
+		exposure: 1.5,
+	},
 }
 const pane = new Pane()
 
@@ -31,6 +62,125 @@ pane
 	})
 	.on('change', (ev) => {
 		particlesMaterial.uniforms.uSize.value = ev.value * renderer.getPixelRatio()
+	})
+
+pane
+	.addBinding(config, 'radius', {
+		min: 0,
+		max: 4,
+		step: 0.001,
+	})
+	.on('change', (ev) => {
+		particlesMaterial.uniforms.uRadius.value = ev.value
+	})
+
+pane
+	.addBinding(config.alpha, 'exp', {
+		min: 0,
+		max: 1,
+		step: 0.001,
+	})
+	.on('change', (ev) => {
+		particlesMaterial.uniforms.uAlphaExp.value = ev.value
+	})
+
+const eggFolder = pane.addFolder({ title: 'Egg', expanded: true })
+eggFolder.addBinding(config.egg, 'color', {
+	color: { type: 'float' },
+})
+eggFolder.addBinding(config.egg, 'colorB', {
+	color: { type: 'float' },
+})
+
+pane
+	.addBinding(config.egg, 'exposure', {
+		min: 0,
+		max: 5,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		eggMat.uniforms.uExposure.value = ev.value
+	})
+
+const hemi = pane.addFolder({ title: 'hemi light', expanded: true })
+hemi.addBinding(config.hemiLight, 'skyColor', { color: { type: 'float' } })
+hemi.addBinding(config.hemiLight, 'groundColor', { color: { type: 'float' } })
+hemi
+	.addBinding(config.hemiLight, 'intensity', { min: 0, max: 1, step: 0.01 })
+	.on('change', (ev) => {
+		particlesMaterial.uniforms.uHemi.value.intensity = ev.value
+	})
+
+const dir = pane.addFolder({ title: 'directional light', expanded: true })
+dir.addBinding(config.dirLight, 'color', { color: { type: 'float' } })
+dir
+	.addBinding(config.dirLight, 'intensity', { min: 0, max: 1, step: 0.01 })
+	.on('change', (ev) => {
+		particlesMaterial.uniforms.uDirLight.value.intensity = ev.value
+	})
+dir.addBinding(config.dirLight, 'direction', {
+	x: { min: -3, max: 3, step: 0.01 },
+	y: { min: -3, max: 3, step: 0.01 },
+	z: { min: -3, max: 3, step: 0.01 },
+})
+
+const point = pane.addFolder({ title: 'point light', expanded: true })
+point.addBinding(config.pointLight, 'color', { color: { type: 'float' } })
+point
+	.addBinding(config.pointLight, 'intensity', { min: 0, max: 1, step: 0.01 })
+	.on('change', (ev) => {
+		particlesMaterial.uniforms.uPointLight.value.intensity = ev.value
+	})
+point.addBinding(config.pointLight, 'position', {
+	x: { min: -3, max: 3, step: 0.01 },
+	y: { min: -3, max: 3, step: 0.01 },
+	z: { min: -3, max: 3, step: 0.01 },
+})
+point
+	.addBinding(config.pointLight, 'maxDistance', { min: 0, max: 20, step: 0.01 })
+	.on('change', (ev) => {
+		particlesMaterial.uniforms.uPointLight.value.maxDistance = ev.value
+	})
+
+point
+	.addBinding(config.pointLight, 'glossiness', {
+		min: 0,
+		max: 1000,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		particlesMaterial.uniforms.uGlossiness.value = ev.value
+	})
+
+const blend = pane.addFolder({ title: 'Blending', expanded: true })
+
+blend
+	.addBinding(config.blend, 'scale', {
+		min: 0.0,
+		max: 2,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		particlesMaterial.uniforms.uBlend.value.scale = ev.value
+	})
+blend
+	.addBinding(config.blend, 'start', {
+		min: 0.0,
+		max: 1,
+		step: 0.001,
+	})
+	.on('change', (ev) => {
+		particlesMaterial.uniforms.uBlend.value.start = ev.value
+	})
+
+blend
+	.addBinding(config.blend, 'end', {
+		min: 0.0,
+		max: 1,
+		step: 0.001,
+	})
+	.on('change', (ev) => {
+		particlesMaterial.uniforms.uBlend.value.end = ev.value
 	})
 
 /**
@@ -63,21 +213,6 @@ const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
 camera.position.set(1, 2.2, 4)
 camera.lookAt(new THREE.Vector3(2, 2.5, 0))
 
-const eggG = new THREE.SphereGeometry(0.5, 32, 32)
-eggG.scale(1, 1, 1)
-// eggG.computeVertexNormals()
-const eggMat = new THREE.ShaderMaterial({
-	vertexShader: eggVert,
-	fragmentShader: eggFrag,
-	uniforms: {
-		uColor: new THREE.Color(1, 0.85, 0.59).multiplyScalar(1.5),
-		uTime: { value: 0 },
-	},
-})
-const egg = new THREE.Mesh(eggG, eggMat)
-egg.scale.y = 1.3
-egg.position.y = 0.2
-scene.add(egg)
 // const light = new THREE.DirectionalLight(0xffffff, 1.5)
 // const light2 = new THREE.HemisphereLight(0x555555, 0x992233, 2)
 // light.position.set(0.7, 2, 0.1)
@@ -158,6 +293,44 @@ const particlesMaterial = new THREE.ShaderMaterial({
 		uSize: { value: config.size * renderer.getPixelRatio() },
 		uResolution: { value: new THREE.Vector2(sizes.width, sizes.height) },
 		uTime: { value: 0 },
+		uHemi: {
+			value: {
+				intensity: config.hemiLight.intensity,
+				skyColor: config.hemiLight.skyColor,
+				groundColor: config.hemiLight.groundColor,
+			},
+		},
+		uDirLight: {
+			value: {
+				color: config.dirLight.color,
+				direction: config.dirLight.direction,
+				intensity: config.dirLight.intensity,
+			},
+		},
+		uPointLight: {
+			value: {
+				color: config.pointLight.color,
+				intensity: config.pointLight.intensity,
+				position: config.pointLight.position,
+				maxDistance: config.pointLight.maxDistance,
+			},
+		},
+		uGlossiness: {
+			value: config.pointLight.glossiness,
+		},
+		uRadius: {
+			value: config.radius,
+		},
+		uBlend: {
+			value: {
+				scale: config.blend.scale,
+				start: config.blend.start,
+				end: config.blend.end,
+			},
+		},
+		uAlphaExp: {
+			value: config.alpha.exp,
+		},
 	},
 	depthWrite: false,
 	// blending: THREE.AdditiveBlending,
@@ -204,6 +377,26 @@ particlesGeometry.setAttribute('aRandom', randomAttribute)
 const cloud = new THREE.Points(particlesGeometry, particlesMaterial)
 
 scene.add(cloud)
+
+const eggG = new THREE.SphereGeometry(0.5, 32, 32)
+eggG.scale(1, 1, 1)
+// eggG.computeVertexNormals()
+const eggMat = new THREE.ShaderMaterial({
+	vertexShader: eggVert,
+	fragmentShader: eggFrag,
+	uniforms: {
+		uColor: { value: config.egg.color },
+		uColorB: { value: config.egg.colorB },
+		uTime: { value: 0 },
+		uHemi: particlesMaterial.uniforms.uHemi,
+		uDirLight: particlesMaterial.uniforms.uDirLight,
+		uExposure: { value: config.egg.exposure },
+	},
+})
+const egg = new THREE.Mesh(eggG, eggMat)
+egg.scale.y = 1.3
+egg.position.y = 0.2
+scene.add(egg)
 
 handleResize()
 

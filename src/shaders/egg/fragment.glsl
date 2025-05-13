@@ -6,7 +6,11 @@
 #include ../fbm.glsl;
 
 uniform vec3 uColor;
+uniform vec3 uColorB;
 uniform float uTime;
+uniform float uExposure;
+uniform HemiLight uHemi;
+uniform DirectionalLight uDirLight;
 
 varying vec2 vUv;
 varying vec3 vNormal;
@@ -24,14 +28,17 @@ void main() {
   vec3 light = vec3(0.);
 
   // light += hemiLight(vec3(0.0,0.5,0.9),vec3(0.9,0.2,0.1), 0.3, n);
-  light += hemiLight(vec3(0.0,0.5,0.9),vec3(0.1,0.01,0.1), 0.4, n);
+  // light += hemiLight(vec3(0.0,0.5,0.9),vec3(0.1,0.01,0.1), 0.4, n); // old
+  light += hemiLight(uHemi.skyColor,uHemi.groundColor, uHemi.intensity * 0.5, n);
   vec3 lightDir = normalize(vec3(1.,2.,0.5));
   vec3 lightColor = vec3(0.7,0.4,0.1);
   // vec3 lightColor = vec3(0.4,0.8,0.9) * 0.7;
-  light += dirLight(lightColor,1.,lightDir, n, -viewDir, 20.);
+  // light += dirLight(lightColor,1.,lightDir, n, -viewDir, 20.); // old
+  light += dirLight(uDirLight.color,uDirLight.intensity * 4.,uDirLight.direction, n, -viewDir, 20.);
 
+  light *= uExposure;
 
-  vec3 baseColor = vec3(1.);
+  vec3 baseColor = uColor;
 
   // noise
   float t = fbm(vPos * 10., 3);
@@ -41,7 +48,7 @@ void main() {
   baseColor *= 1.2 - t * 0.3 + t2 * 0.3;
 
   t3 = pow(t3,2.);
-  vec3 gold = vec3(1.,0.6,0.4);
+  vec3 gold = uColorB;
 
   // baseColor = mix(baseColor,vec3(0.9,0.1,0.0),pow(t4,5.));
   baseColor = mix(baseColor,gold,t3);
