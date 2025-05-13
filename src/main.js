@@ -19,7 +19,7 @@ const textureLoader = new THREE.TextureLoader()
  */
 // __gui__
 const config = {
-	size: 1900,
+	size: 1950,
 	hemiLight: {
 		skyColor: new THREE.Color(0.17, 0.03, 0.1),
 		groundColor: new THREE.Color(0.8, 0.5, 0.3),
@@ -45,7 +45,7 @@ const config = {
 	alpha: {
 		exp: 0.8,
 	},
-	radius: 1.3,
+	radius: 1,
 	egg: {
 		color: new THREE.Color(1, 1, 0.9),
 		colorB: new THREE.Color(1, 0.6, 0.4),
@@ -211,7 +211,7 @@ const sizes = {
  */
 const fov = 60
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-camera.position.set(1, 2.2, 4)
+camera.position.set(0.6, 1.8, 2.8)
 camera.lookAt(new THREE.Vector3(2, 2.5, 0))
 
 // const light = new THREE.DirectionalLight(0xffffff, 1.5)
@@ -344,7 +344,7 @@ const particlesMaterial = new THREE.ShaderMaterial({
 })
 
 const particlesGeometry = new THREE.BufferGeometry()
-const count = 550
+const count = 250
 const position = new Float32Array(count * 3)
 const color = new Float32Array(count * 3)
 const random = new Float32Array(count)
@@ -352,9 +352,9 @@ const random = new Float32Array(count)
 for (let i = 0; i < count; i++) {
 	const index = i * 3
 	const dir = new THREE.Vector3().randomDirection()
-	const x = dir.x * Math.random() * 8
-	const y = (Math.random() - 0.5) * 2
-	const z = dir.z * Math.random() * 8
+	const x = dir.x * Math.random() * 4
+	const y = (Math.random() - 0.5) * 1.5
+	const z = dir.z * Math.random() * 4
 
 	position[index + 0] = x
 	position[index + 1] = y
@@ -379,7 +379,7 @@ const cloud = new THREE.Points(particlesGeometry, particlesMaterial)
 
 scene.add(cloud)
 
-const eggG = new THREE.SphereGeometry(0.5, 32, 32)
+const eggG = new THREE.SphereGeometry(0.4, 32, 32)
 eggG.scale(1, 1, 1)
 // eggG.computeVertexNormals()
 const eggMat = new THREE.ShaderMaterial({
