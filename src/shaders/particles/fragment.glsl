@@ -5,11 +5,21 @@
 #include ../perlin.glsl;
 #include ../lights.glsl;
 
+struct Blend {
+  float scale;
+  float start;
+  float end;
+};
+
+
 uniform float uTime;
 uniform sampler2D uMap;
 uniform DirectionalLight uDirLight;
 uniform HemiLight uHemi;
 uniform PointLight uPointLight;
+uniform float uGlossiness;
+uniform Blend uBlend;
+uniform float uEggRadius;
 
 varying vec3 vWorldPosition;
 varying vec3 vRandom;
@@ -52,10 +62,20 @@ void main() {
 
   light += hemiLight(uHemi.skyColor, uHemi.groundColor, uHemi.intensity, n);
   light += dirLight(uDirLight.color, uDirLight.intensity, normalize(uDirLight.direction), n, viewDir, 10.);
-  // light += pointLight(uPointLight.color, uPointLight.intensity, uPointLight.position, vWorldPosition, n, uPointLight.maxDistance, viewDir, 20. );
+  light += pointLight(uPointLight.color, uPointLight.intensity, uPointLight.position, vWorldPosition, n, uPointLight.maxDistance, viewDir, uGlossiness );
+
+  light = pow(light, vec3(3.));
 
   color = vec3(1.0);
   color *= light;
+  color *= 1.0 - random(uv * 3. + 100. + uTime) * 0.5;
+
+  a *= smoothstep(uEggRadius, uEggRadius + 0.1, length(vWorldPosition.xz));
+
+  color *= a;
+
+  float blend = remap(length(light) * uBlend.scale,0.0,1.0,uBlend.start, uBlend.end );
+  a *= blend;
   
   gl_FragColor = vec4(color, a);
   #include <tonemapping_fragment>

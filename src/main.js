@@ -9,6 +9,10 @@ import { Pane } from 'tweakpane'
 import vertexShader from './shaders/particles/vertex.glsl'
 import fragmentShader from './shaders/particles/fragment.glsl'
 
+import eggVertexShader from './shaders/egg/vertex.glsl'
+import eggFragmentShader from './shaders/egg/fragment.glsl'
+import { color } from 'three/tsl'
+
 const textureLoader = new THREE.TextureLoader()
 
 /**
@@ -19,6 +23,11 @@ const config = {
 	size: 1800,
 	minDistance: 2,
 	maxDistance: 6,
+	blend: {
+		scale: 0.75,
+		start: 0.25,
+		end: 0.15,
+	},
 	hemiLight: {
 		skyColor: new THREE.Color(0.17, 0.03, 0.1),
 		groundColor: new THREE.Color(0.8, 0.5, 0.3),
@@ -36,9 +45,15 @@ const config = {
 		maxDistance: 10,
 		glossiness: 700,
 	},
+	egg: {
+		color: new THREE.Color(1, 1, 0.9),
+		colorB: new THREE.Color(1, 0.6, 0.4),
+		radius: 1.3,
+		exposure: 5,
+	},
 }
 const pane = new Pane()
-const particles = pane.addFolder({ title: 'particles', expanded: true })
+const particles = pane.addFolder({ title: 'particles', expanded: false })
 
 particles
 	.addBinding(config, 'size', {
@@ -68,6 +83,37 @@ particles
 	})
 	.on('change', (ev) => {
 		cloudMaterial.uniforms.uMaxDistance.value = ev.value
+	})
+
+const blend = pane.addFolder({ title: 'blend', expanded: false })
+blend
+	.addBinding(config.blend, 'scale', {
+		min: 0.0,
+		max: 2,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		cloudMaterial.uniforms.uBlend.value.scale = ev.value
+	})
+
+blend
+	.addBinding(config.blend, 'start', {
+		min: 0.0,
+		max: 1,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		cloudMaterial.uniforms.uBlend.value.start = ev.value
+	})
+
+blend
+	.addBinding(config.blend, 'end', {
+		min: 0.0,
+		max: 1,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		cloudMaterial.uniforms.uBlend.value.end = ev.value
 	})
 
 const hemi = pane.addFolder({ title: 'hemi light', expanded: false })
@@ -118,6 +164,34 @@ point
 	})
 	.on('change', (ev) => {
 		cloudMaterial.uniforms.uGlossiness.value = ev.value
+	})
+
+const eggFolder = pane.addFolder({ title: 'egg', expanded: true })
+eggFolder.addBinding(config.egg, 'color', {
+	color: { type: 'float' },
+})
+eggFolder.addBinding(config.egg, 'colorB', {
+	color: { type: 'float' },
+})
+
+eggFolder
+	.addBinding(config.egg, 'radius', {
+		min: 0,
+		max: 3,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		cloudMaterial.uniforms.uEggRadius.value = ev.value
+	})
+
+eggFolder
+	.addBinding(config.egg, 'exposure', {
+		min: 0,
+		max: 10,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		eggMaterial.uniforms.uExposure.value = ev.value
 	})
 
 /**
@@ -223,6 +297,16 @@ const cloudMaterial = new THREE.ShaderMaterial({
 		uMaxDistance: {
 			value: config.maxDistance,
 		},
+		uEggRadius: {
+			value: config.egg.radius,
+		},
+		uBlend: {
+			value: {
+				scale: config.blend.scale,
+				start: config.blend.start,
+				end: config.blend.end,
+			},
+		},
 		uHemi: {
 			value: {
 				intensity: config.hemiLight.intensity,
@@ -245,22 +329,28 @@ const cloudMaterial = new THREE.ShaderMaterial({
 				maxDistance: config.pointLight.maxDistance,
 			},
 		},
+		uGlossiness: {
+			value: config.pointLight.glossiness,
+		},
 	},
 	depthWrite: false,
-	// blending: THREE.AdditiveBlending,
+	blending: THREE.CustomBlending,
+	blendEquation: THREE.AddEquation,
+	blendSrc: THREE.OneFactor,
+	blendDst: THREE.OneMinusSrcAlphaFactor,
 })
 
 const cloudGeometry = new THREE.BufferGeometry()
-const count = 200
+const count = 300
 const position = new Float32Array(count * 3)
 const random = new Float32Array(count * 3)
 
 for (let i = 0; i < count; i++) {
 	const index = i * 3
 	const dir = new THREE.Vector3().randomDirection()
-	const x = dir.x * Math.random() * 4
-	const y = (Math.random() - 0.5) * 1
-	const z = dir.z * Math.random() * 4
+	const x = dir.x * Math.random() * 8
+	const y = (Math.random() - 0.5) * 1.5
+	const z = dir.z * Math.random() * 8
 
 	position[index + 0] = x
 	position[index + 1] = y
@@ -280,6 +370,29 @@ cloudGeometry.setAttribute('aRandom', randomAttribute)
 const cloud = new THREE.Points(cloudGeometry, cloudMaterial)
 
 scene.add(cloud)
+
+// EGG
+const eggGeometry = new THREE.SphereGeometry(0.5, 32, 32)
+const eggMaterial = new THREE.ShaderMaterial({
+	vertexShader: eggVertexShader,
+	fragmentShader: eggFragmentShader,
+	// wireframe: true,
+	uniforms: {
+		uTime: cloudMaterial.uniforms.uTime,
+		uHemi: cloudMaterial.uniforms.uHemi,
+		uDirLight: cloudMaterial.uniforms.uDirLight,
+		uColor: { value: config.egg.color },
+		uColorB: { value: config.egg.colorB },
+		uExposure: {
+			value: config.egg.exposure,
+		},
+	},
+})
+
+const egg = new THREE.Mesh(eggGeometry, eggMaterial)
+egg.scale.y = 1.3
+egg.position.y = 0.2
+scene.add(egg)
 
 handleResize()
 
@@ -311,6 +424,8 @@ function tic() {
 	time += deltaTime
 
 	cloudMaterial.uniforms.uTime.value = time
+	egg.rotation.y = -time * 0.5
+	egg.position.y = 0.2 + Math.sin(time) * 0.3
 
 	// __controls_update__
 	controls.update(deltaTime)
