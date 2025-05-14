@@ -20,7 +20,7 @@ void main() {
 
   vec4 wPos = modelMatrix * vec4(position,1.0);
 
-  float speed = 1. - smoothstep(0.0,5.,length(wPos) );
+  float speed = 1. - smoothstep(0.0,10.,length(wPos) );
   wPos.xz = rotate(uTime * speed * 0.3) * wPos.xz;
   wPos.y += cnoise(wPos.xyz * 0.5 + uTime * 0.5) * 0.1;
 

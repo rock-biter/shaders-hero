@@ -20,9 +20,9 @@ const textureLoader = new THREE.TextureLoader()
  */
 // __gui__
 const config = {
-	size: 1800,
-	minDistance: 2,
-	maxDistance: 6,
+	size: 1900,
+	minDistance: 3,
+	maxDistance: 10,
 	blend: {
 		scale: 0.75,
 		start: 0.25,
@@ -224,8 +224,8 @@ camera.lookAt(new THREE.Vector3(2, 2.5, 0))
  * Show the axes of coordinates system
  */
 // __helper_axes__
-const axesHelper = new THREE.AxesHelper(3)
-scene.add(axesHelper)
+// const axesHelper = new THREE.AxesHelper(3)
+// scene.add(axesHelper)
 
 const bgGeom = new THREE.BufferGeometry()
 bgGeom.setAttribute(
@@ -341,7 +341,7 @@ const cloudMaterial = new THREE.ShaderMaterial({
 })
 
 const cloudGeometry = new THREE.BufferGeometry()
-const count = 300
+const count = 400
 const position = new Float32Array(count * 3)
 const random = new Float32Array(count * 3)
 
