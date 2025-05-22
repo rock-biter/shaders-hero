@@ -9,7 +9,18 @@ float toonify(vec3 normal, vec3 lightDir, float g, float steps) {
   return t;
 }
 
-float toonify(float d, float steps, float g) {
+float toonify(vec3 normal, vec3 lightDir, float g, float steps, float decay) {
+  float d = max(0.0, dot(normalize(normal), normalize(lightDir))) * decay;
+  float t = floor(d * steps ) / (steps - 1.0);
+  float edge = floor(d * steps) / steps;
+  t += smoothstep( edge,edge + g, d) / (steps - 1.0);
+  // t /= steps - 1.0;
+  t -= 1. / (steps - 1.0);
+  
+  return t;
+}
+
+float hemiToonify(float d, float steps, float g) {
   float t = floor(d * steps );
   float edge = floor(d * steps) / steps;
   float t2 = smoothstep( edge,edge + g, d);
@@ -19,9 +30,14 @@ float toonify(float d, float steps, float g) {
   return t;
 }
 
-vec3 toonify(vec3 specular,float t) {
+float toonify(float specular,float t) {
   // return step(0.5, specular);
   return smoothstep(0.5, 0.5 + t,specular);
+}
+
+float toonify(float specular,float t, float decay) {
+  // return step(0.5, specular);
+  return smoothstep(0.5, 0.5 + t,specular * decay);
 }
 
 struct AmbientLight {
@@ -49,7 +65,7 @@ vec3 hemiLight(vec3 skyColor, vec3 groundColor, vec3 normal) {
     float b = length(skyColor);
     float h = length(hemi);
     float t = inverseLerp(h,a,b);
-    float hemiMix = toonify(t,float(TOON),0.05);
+    float hemiMix = hemiToonify(t,float(TOON),0.05);
     hemi = mix(groundColor, skyColor,hemiMix);
   #endif
   return hemi;
@@ -61,27 +77,27 @@ struct DirLight {
   vec3 direction;
 };
 
-vec3 phongSpecular(vec3 viewDir, vec3 lightDir, vec3 lightColor, vec3 normal, float glossiness) {
+float phongSpecular(vec3 viewDir, vec3 lightDir, vec3 normal, float glossiness) {
 	vec3 reflectDir = normalize(reflect(lightDir,normal));
 	float phongValue = max(0.0,dot(viewDir, reflectDir));
 	phongValue = pow(phongValue,glossiness);
 	
-	return lightColor * phongValue;
+	return phongValue;
 
 }
 
 vec3 dirLight(vec3 lightColor, float intensity, vec3 lightDirection, vec3 normal, vec3 viewDirection, float glossiness) {
   lightDirection = normalize(lightDirection);
   float lightAngle = max(dot(normal,lightDirection),0.0);
-  vec3 diffuse = lightColor * lightAngle;
-  vec3 specular = phongSpecular(viewDirection, lightDirection, lightColor, normal, glossiness);
+  float diffuse = lightAngle;
+  float specular = phongSpecular(viewDirection, lightDirection, normal, glossiness);
 
   #ifdef TOON
     specular = toonify(specular,0.02);
-    diffuse = diffuse * toonify(normal, lightDirection,0.08, float(TOON));
+    diffuse = toonify(normal, lightDirection,0.08, float(TOON));
   #endif
 
-  vec3 light = (diffuse + specular) * intensity;
+  vec3 light = (diffuse + specular) * intensity * lightColor;
 
   return light;
 }
@@ -100,15 +116,17 @@ vec3 pointLight(vec3 lightColor, float intensity, vec3 lightPosition, vec3 posit
   float decay = 1.0 - linearstep(0.0, maxDistance, d);
   lightDirection = normalize(lightDirection);
   float lightAngle = max(dot(normal,lightDirection),0.0);
-  vec3 diffuse = lightColor * lightAngle;
-  vec3 specular = phongSpecular(viewDirection, lightDirection, lightColor, normal, glossiness);
+  float diffuse = lightAngle;
+  float specular = phongSpecular(viewDirection, lightDirection, normal, glossiness);
 
   #ifdef TOON
-    specular = toonify(specular,0.05);
-    diffuse = diffuse * toonify(normal, lightDirection,0.08, float(TOON));
+    specular = toonify(specular,0.05, decay);
+    diffuse = toonify(normal, lightDirection,0.08, float(TOON),decay);
+  #else
+    intensity *=  decay;
   #endif
 
-  vec3 light = (diffuse + specular) * intensity * decay;
+  vec3 light = (diffuse + specular) * intensity * lightColor;
 
   return light;
 }
@@ -132,19 +150,21 @@ vec3 spotLight(vec3 lightColor, float intensity, vec3 lightPosition, vec3 lightT
   lightDirection = normalize(lightDirection);
   fragDirection = normalize(fragDirection);
   float shading = max(dot(normal,fragDirection),0.0);
-  vec3 diffuse = lightColor * shading;
-  vec3 specular = phongSpecular(viewDirection, fragDirection, lightColor, normal, glossiness);
+  float diffuse = shading;
+  float specular = phongSpecular(viewDirection, fragDirection, normal, glossiness);
 
   float maxLightAngle = cos(angle * 0.5);
   float lightAngle = max(dot(fragDirection,lightDirection),0.0);
   float edge = smoothstep(maxLightAngle - penumbra, maxLightAngle, lightAngle);
 
   #ifdef TOON
-    specular = toonify(specular,0.05);
-    diffuse = diffuse * toonify(normal, lightDirection,0.08, float(TOON));
+    specular = toonify(specular,0.05, decay * edge);
+    diffuse = toonify(normal, fragDirection,0.05, float(TOON), decay * edge);
+  #else
+    intensity *= decay * edge;
   #endif
 
-  vec3 light = (diffuse + specular) * intensity * decay * edge;
+  vec3 light = (diffuse + specular) * intensity * lightColor;
 
   return light;
 

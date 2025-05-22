@@ -40,8 +40,8 @@ const config = {
 		angle: Math.PI / 2.5,
 		penumbra: 0.1,
 	},
-	glossiness: 22,
-	toon: 3,
+	glossiness: 10,
+	toon: 5,
 }
 const pane = new Pane()
 
@@ -49,6 +49,205 @@ const pane = new Pane()
 // 	color: { type: 'float' },
 // })
 
+const ambientFolder = pane.addFolder({
+	title: 'Ambient Light',
+	expanded: false,
+})
+const hemiFolder = pane.addFolder({ title: 'PointLight', expanded: false })
+const dirFolder = pane.addFolder({
+	title: 'Directional Light',
+	expanded: false,
+})
+const pointFolder = pane.addFolder({ title: 'Point Light', expanded: false })
+const spotFolder = pane.addFolder({ title: 'Spot Light', expanded: false })
+
+// SPOT LIGHT
+spotFolder.addBinding(config.spotLight, 'color', {
+	color: { type: 'float' },
+})
+
+spotFolder
+	.addBinding(config.spotLight, 'intensity', {
+		min: 0,
+		max: 4,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.intensity = ev.value
+	})
+
+spotFolder
+	.addBinding(config.spotLight, 'angle', {
+		min: 0,
+		max: Math.PI,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.angle = ev.value
+	})
+
+spotFolder
+	.addBinding(config.spotLight, 'penumbra', {
+		min: 0,
+		max: 1.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.penumbra = ev.value
+	})
+
+spotFolder
+	.addBinding(config.spotLight, 'maxDistance', {
+		min: 0,
+		max: 20,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.maxDistance = ev.value
+	})
+
+spotFolder.addBinding(config.spotLight, 'position', {
+	x: {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	},
+	y: {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	},
+	z: {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	},
+})
+
+spotFolder
+	.addBinding(config.spotLight, 'target', {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uSpotLight.value.target.x = ev.value
+	})
+spotFolder.addBinding(config.spotLight.target, 'y', {
+	x: {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	},
+	y: {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	},
+	z: {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	},
+})
+
+// POINT LIGHT
+pointFolder.addBinding(config.pointLight, 'color', {
+	color: { type: 'float' },
+})
+
+pointFolder
+	.addBinding(config.pointLight, 'intensity', {
+		min: 0,
+		max: 4,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uPointLight.value.intensity = ev.value
+	})
+
+pointFolder
+	.addBinding(config.pointLight, 'maxDistance', {
+		min: 0,
+		max: 20,
+		step: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uPointLight.value.maxDistance = ev.value
+	})
+
+pointFolder.addBinding(config.pointLight, 'position', {
+	x: {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	},
+	y: {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	},
+	z: {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	},
+})
+
+// HEMI LIGHT
+hemiFolder.addBinding(config.hemiLight, 'skyColor', {
+	color: { type: 'float' },
+})
+
+hemiFolder.addBinding(config.hemiLight, 'groundColor', {
+	color: { type: 'float' },
+})
+
+// DIR LIGHT
+dirFolder.addBinding(config.dirLight, 'color', {
+	color: { type: 'float' },
+})
+
+dirFolder
+	.addBinding(config.dirLight, 'intensity', {
+		min: 0,
+		max: 1,
+		steps: 0.01,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uDirLight.value.intensity = ev.value
+	})
+
+dirFolder.addBinding(config.dirLight, 'direction', {
+	x: {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	},
+	y: {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	},
+	z: {
+		min: -2,
+		max: 2.0,
+		step: 0.01,
+	},
+})
+
+// GLOSSINESS
+pane
+	.addBinding(config, 'glossiness', {
+		min: 1,
+		max: 100,
+		step: 0.1,
+	})
+	.on('change', (ev) => {
+		material.uniforms.uGlossiness.value = ev.value
+	})
+
+//TOON
 pane
 	.addBinding(config, 'toon', {
 		min: 1,
@@ -63,237 +262,6 @@ pane
 			material.defines.TOON = ev.value
 		}
 		material.needsUpdate = true
-	})
-
-// SPOT LIGHT
-pane.addBinding(config.spotLight, 'color', {
-	color: { type: 'float' },
-})
-
-pane
-	.addBinding(config.spotLight, 'intensity', {
-		min: 0,
-		max: 4,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uSpotLight.value.intensity = ev.value
-	})
-
-pane
-	.addBinding(config.spotLight, 'angle', {
-		min: 0,
-		max: Math.PI,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uSpotLight.value.angle = ev.value
-	})
-
-pane
-	.addBinding(config.spotLight, 'penumbra', {
-		min: 0,
-		max: 1.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uSpotLight.value.penumbra = ev.value
-	})
-
-pane
-	.addBinding(config.spotLight, 'maxDistance', {
-		min: 0,
-		max: 20,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uSpotLight.value.maxDistance = ev.value
-	})
-
-pane
-	.addBinding(config.spotLight.position, 'x', {
-		min: -2,
-		max: 2.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uSpotLight.value.position.x = ev.value
-	})
-pane
-	.addBinding(config.spotLight.position, 'y', {
-		min: -2,
-		max: 2.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uSpotLight.value.position.y = ev.value
-	})
-
-pane
-	.addBinding(config.spotLight.position, 'z', {
-		min: -2,
-		max: 2.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uSpotLight.value.position.z = ev.value
-	})
-
-pane
-	.addBinding(config.spotLight.target, 'x', {
-		min: -2,
-		max: 2.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uSpotLight.value.target.x = ev.value
-	})
-pane
-	.addBinding(config.spotLight.target, 'y', {
-		min: -2,
-		max: 2.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uSpotLight.value.target.y = ev.value
-	})
-
-pane
-	.addBinding(config.spotLight.target, 'z', {
-		min: -2,
-		max: 2.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uSpotLight.value.target.z = ev.value
-	})
-
-// POINT LIGHT
-pane.addBinding(config.pointLight, 'color', {
-	color: { type: 'float' },
-})
-
-pane
-	.addBinding(config.pointLight, 'intensity', {
-		min: 0,
-		max: 4,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uPointLight.value.intensity = ev.value
-	})
-
-pane
-	.addBinding(config.pointLight, 'maxDistance', {
-		min: 0,
-		max: 20,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uPointLight.value.maxDistance = ev.value
-	})
-
-pane
-	.addBinding(config.pointLight.position, 'x', {
-		min: -2,
-		max: 2.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uPointLight.value.position.x = ev.value
-	})
-pane
-	.addBinding(config.pointLight.position, 'y', {
-		min: -2,
-		max: 2.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uPointLight.value.position.y = ev.value
-	})
-
-pane
-	.addBinding(config.pointLight.position, 'z', {
-		min: -2,
-		max: 2.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uPointLight.value.position.z = ev.value
-	})
-
-// GLOSSINESS
-pane
-	.addBinding(config, 'glossiness', {
-		min: 1,
-		max: 100,
-		step: 0.1,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uGlossiness.value = ev.value
-	})
-
-// HEMI LIGHT
-pane.addBinding(config.hemiLight, 'skyColor', {
-	color: { type: 'float' },
-})
-
-pane.addBinding(config.hemiLight, 'groundColor', {
-	color: { type: 'float' },
-})
-
-// pane
-// 	.addBinding(config.ambientLight, 'intensity', {
-// 		min: 0,
-// 		max: 1,
-// 		steps: 0.01,
-// 	})
-// 	.on('change', (ev) => {
-// 		material.uniforms.uAmbientLight.value.intensity = ev.value
-// 	})
-
-// DIR LIGHT
-pane.addBinding(config.dirLight, 'color', {
-	color: { type: 'float' },
-})
-
-pane
-	.addBinding(config.dirLight, 'intensity', {
-		min: 0,
-		max: 1,
-		steps: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uDirLight.value.intensity = ev.value
-	})
-
-pane
-	.addBinding(config.dirLight.direction, 'x', {
-		min: -2,
-		max: 2.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uDirLight.value.direction.x = ev.value
-	})
-pane
-	.addBinding(config.dirLight.direction, 'y', {
-		min: -2,
-		max: 2.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uDirLight.value.direction.y = ev.value
-	})
-
-pane
-	.addBinding(config.dirLight.direction, 'z', {
-		min: -2,
-		max: 2.0,
-		step: 0.01,
-	})
-	.on('change', (ev) => {
-		material.uniforms.uDirLight.value.direction.z = ev.value
 	})
 
 /**
