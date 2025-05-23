@@ -46,6 +46,7 @@ perlin
 	})
 	.on('change', (ev) => {
 		material.uniforms.uFrequency.value = ev.value
+		innerDrop.material.uniforms.uFrequency.value = ev.value
 	})
 
 perlin
@@ -56,6 +57,7 @@ perlin
 	})
 	.on('change', (ev) => {
 		material.uniforms.uAmplitude.value = ev.value
+		innerDrop.material.uniforms.uAmplitude.value = ev.value
 	})
 
 /**
