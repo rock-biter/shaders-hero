@@ -342,7 +342,7 @@ const planeGeom = new THREE.PlaneGeometry(10, 10)
 planeGeom.rotateX(-Math.PI / 2)
 const plane = new THREE.Mesh(planeGeom, material)
 plane.position.y = -2
-scene.add(plane)
+// scene.add(plane)
 
 /**
  * render sizes
